@@ -10,38 +10,29 @@ export type PartialDeep<T> = {
     [key in keyof T]?: Required<T>[key] extends object ? PartialDeep<T[key]> : T[key];
 };
 
-export interface FormValidationState<T extends AnyObject> {
-    value: ValueState<T>;
-}
-
 export type FormFieldState = {
     value: Ref<unknown>;
 };
 
-export interface ObjectFormFieldState<T extends AnyObject> {
-    value: Ref<ObjectValueState<T>>;
+export interface FieldValidation<T> {
+    value: T;
 }
 
-export interface PrimitiveFormFieldState<T> {
-    value: Ref<PrimitiveValueState<T>>;
-}
-
-export type ValueState<T> = T extends object
-    ? Ref<ObjectValueState<T>>
-    : Ref<PrimitiveValueState<T>>;
-
-export type ObjectValueState<T extends AnyObject> = {
-    [key in keyof T]-?: ValueState<Required<T>[key]>;
-};
-
-export type PrimitiveValueState<T> = NonNullable<T> | null;
-
-export interface FormValidation<T extends AnyObject> {
+export interface FormValidation<T extends AnyObject> extends FieldValidation<FormValue<T>> {
     value: FormValue<T>;
+    fields: FormFields<T>;
 }
 
 export type FormValue<T extends AnyObject> = {
-    [key in keyof T]-?: Required<T>[key] extends AnyObject ? FormValue<T[key]> : T[key] | null;
+    [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
+        ? FormValue<NonNullable<T[key]>>
+        : T[key] | null;
+};
+
+export type FormFields<T extends AnyObject> = {
+    [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
+        ? FormValidation<NonNullable<T[key]>>
+        : FieldValidation<T[key]>;
 };
 
 type User = {
@@ -67,3 +58,8 @@ form.value.age; // number | null
 form.value.address.street;
 form.value.address.city;
 form.value.address.state.abbreviation;
+
+type address = User["address"];
+type thing = keyof Address;
+
+form.fields.address.fields.state.fields.name;
