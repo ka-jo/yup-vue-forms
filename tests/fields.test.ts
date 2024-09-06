@@ -23,7 +23,7 @@ it("fields includes all schema fields", () => {
         numberField: expect.anything(),
         booleanField: expect.anything(),
         nestedObjectField: expect.objectContaining({
-            nestedField: expect.anything(),
+            fields: expect.objectContaining({ nestedField: expect.anything() }),
         }),
     });
 });

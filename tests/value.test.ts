@@ -16,7 +16,6 @@ it("value is not null or undefined", () => {
 
 it("value includes all schema fields", () => {
     const form = useFormValidation({ schema: testSchema });
-    console.log(form.value);
     expect(form.value).toMatchObject({
         requiredField: expect.anything(),
         optionalField: null,

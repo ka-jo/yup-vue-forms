@@ -10,9 +10,13 @@ export type PartialDeep<T> = {
     [key in keyof T]?: Required<T>[key] extends object ? PartialDeep<T[key]> : T[key];
 };
 
-export type FormFieldState = {
+export interface FieldState {
     value: Ref<unknown>;
-};
+}
+
+export interface FormState extends FieldState {
+    fields: Record<string, FieldState>;
+}
 
 export interface FieldValidation<T> {
     value: T;

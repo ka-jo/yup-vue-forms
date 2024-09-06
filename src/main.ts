@@ -8,7 +8,7 @@ import type {
     SchemaRefDescription,
 } from "yup";
 import { reactive, ref, Ref } from "vue";
-import { FormFieldState, FormValidation, FormValidationOptions, PartialDeep } from "./types";
+import { FieldState, FormState, FormValidation, FormValidationOptions, PartialDeep } from "./types";
 
 export function useFormValidation<T extends object>(
     input: FormValidationOptions<T>
@@ -19,10 +19,7 @@ export function useFormValidation<T extends object>(
 
     const form = initializeObjectFormField(description, input.value);
 
-    const reactiveForm = reactive(form) as FormValidation<T>;
-    //@ts-ignore
-    const thing = reactiveForm.value.nestedObjectField;
-    return reactiveForm;
+    return reactive(form) as FormValidation<T>;
 }
 
 function isObjectFieldDescription(
@@ -34,26 +31,29 @@ function isObjectFieldDescription(
 function initializeObjectFormField<T extends object>(
     schema: SchemaObjectDescription,
     initialValue: PartialDeep<T> | undefined
-): FormFieldState {
+): FormState {
     const fieldValues: Record<string, unknown> = Object.assign({}, schema.default, initialValue);
     const value: Record<string, Ref<unknown>> = {} as any;
+    const fields: Record<string, FieldState> = {} as any;
 
     for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
         const nestedField = initializeFormField(fieldSchema, fieldValues[fieldName]);
         if (nestedField) {
             value[fieldName] = nestedField.value;
+            fields[fieldName] = nestedField;
         }
     }
 
     return {
         value: ref(value),
+        fields: fields,
     };
 }
 
 function initializeFormField<T>(
     schema: SchemaFieldDescription,
     initialValue: unknown | undefined
-): FormFieldState | null {
+): FieldState | null {
     if (isObjectFieldDescription(schema)) {
         return initializeObjectFormField(schema, initialValue as AnyObject);
     } else if (isSchemaDescription(schema)) {
@@ -68,15 +68,12 @@ function initializeFormField<T>(
 function initializePrimitiveFormField<T>(
     schema: SchemaDescription,
     initialValue: T | undefined
-): FormFieldState {
+): FieldState {
     const value = (initialValue ?? schema.default ?? null) as NonNullable<T> | null;
     return { value: ref(value) };
 }
 
-function initializeLazyFormField<T>(
-    schema: SchemaLazyDescription,
-    initialValue?: T
-): FormFieldState {
+function initializeLazyFormField<T>(schema: SchemaLazyDescription, initialValue?: T): FieldState {
     const value = null;
     return { value: ref(value) };
 }
