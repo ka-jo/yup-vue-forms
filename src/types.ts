@@ -7,7 +7,9 @@ export interface FormValidationOptions<T extends AnyObject> {
 }
 
 export type PartialDeep<T> = {
-    [key in keyof T]?: Required<T>[key] extends object ? PartialDeep<T[key]> : T[key];
+    [key in keyof T]?: NonNullable<T[key]> extends object
+        ? PartialDeep<NonNullable<T[key]>>
+        : T[key];
 };
 
 export interface FieldState {
