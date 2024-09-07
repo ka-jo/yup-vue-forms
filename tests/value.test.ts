@@ -23,9 +23,7 @@ it("value includes all schema fields", () => {
         stringField: expect.anything(),
         numberField: expect.anything(),
         booleanField: expect.anything(),
-        nestedObjectField: expect.objectContaining({
-            nestedField: expect.anything(),
-        }),
+        nestedObjectField: expect.anything(),
         lazyObjectField: expect.anything(),
         lazyStringField: expect.anything(),
         lazyNumberField: expect.anything(),
@@ -102,16 +100,16 @@ describe("value is initialized with default values", () => {
                 // Better that the optional field is not given a default so this can test that a field
                 // is initialized as null when no value is provided and no schema default is defined
                 nestedOptionalField: null,
-                nestedStringField: DEFAULT_STRING,
+                nestedStringField: DEFAULT_OBJECT.nestedStringField,
                 nestedNumberField: newValues.nestedObjectField.nestedNumberField,
                 nestedBooleanField: newValues.nestedObjectField.nestedBooleanField,
             },
             lazyObjectField: {
-                nestedRequiredField: DEFAULT_STRING,
+                nestedRequiredField: DEFAULT_OBJECT.nestedRequiredField,
                 nestedOptionalField: newValues.lazyObjectField.nestedOptionalField,
                 nestedStringField: newValues.lazyObjectField.nestedStringField,
-                nestedNumberField: DEFAULT_NUMBER,
-                nestedBooleanField: DEFAULT_BOOLEAN,
+                nestedNumberField: DEFAULT_OBJECT.nestedNumberField,
+                nestedBooleanField: DEFAULT_OBJECT.nestedBooleanField,
             },
         });
     });

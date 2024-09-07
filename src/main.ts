@@ -2,7 +2,6 @@ import type {
     AnyObject,
     SchemaDescription,
     SchemaFieldDescription,
-    SchemaInnerTypeDescription,
     SchemaLazyDescription,
     SchemaObjectDescription,
     SchemaRefDescription,
@@ -15,7 +14,7 @@ export function useFormValidation<T extends object>(
 ): FormValidation<T> {
     input.value ??= {} as Partial<T>;
 
-    const description = input.schema.describe();
+    const description = input.schema.describe({ value: input.value });
 
     const form = initializeObjectFormField(description, input.value);
 
@@ -73,8 +72,11 @@ function initializePrimitiveFormField<T>(
     return { value: ref(value) };
 }
 
+/*  After testing Yup's schema.describe method, it would seem schema descriptions
+    are only type 'lazy' when no value is passed to schema.describe, 
+    so this case should not be possible */
 function initializeLazyFormField<T>(schema: SchemaLazyDescription, initialValue?: T): FieldState {
-    const value = null;
+    const value = initialValue ?? null;
     return { value: ref(value) };
 }
 
@@ -92,7 +94,7 @@ function isSchemaDescription(
 
 function isLazyFieldDescription(
     description: SchemaFieldDescription
-): description is SchemaInnerTypeDescription {
+): description is SchemaLazyDescription {
     return description.type === "lazy";
 }
 

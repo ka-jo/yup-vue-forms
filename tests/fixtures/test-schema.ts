@@ -33,11 +33,11 @@ export type NestedObject = {
 };
 
 export const nestedObjectSchema: ObjectSchema<NestedObject> = object({
-    nestedRequiredField: string().required().default(DEFAULT_STRING),
+    nestedRequiredField: string().required().default(DEFAULT_OBJECT.nestedRequiredField),
     nestedOptionalField: string().notRequired(),
-    nestedStringField: string().default(DEFAULT_STRING),
-    nestedNumberField: number().default(DEFAULT_NUMBER),
-    nestedBooleanField: boolean().default(DEFAULT_BOOLEAN),
+    nestedStringField: string().default(DEFAULT_OBJECT.nestedStringField),
+    nestedNumberField: number().default(DEFAULT_OBJECT.nestedNumberField),
+    nestedBooleanField: boolean().default(DEFAULT_OBJECT.nestedBooleanField),
 });
 
 export const testSchema: ObjectSchema<TestSchema> = object({
