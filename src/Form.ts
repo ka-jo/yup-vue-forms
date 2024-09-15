@@ -48,7 +48,7 @@ export class Form implements FormState {
         initialValue: AnyObject | undefined,
         options: ValidateOptions
     ): FormState {
-        const defaultValue = Object.assign({}, schema.default, initialValue);
+        const defaultValue = Object.assign({}, schema.spec.default, initialValue);
         const fields: Record<string, IFieldState> = {};
         const value: Record<string, Ref<unknown>> = {};
         const errors: FormErrorState = { [Symbol.iterator]: Form.errorIterator };
@@ -56,8 +56,8 @@ export class Form implements FormState {
         for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
             const nestedField = Field.initializeField(
                 fieldSchema,
-                options,
-                defaultValue[fieldName]
+                defaultValue[fieldName],
+                options
             );
 
             if (nestedField) {

@@ -1,6 +1,6 @@
 import { Ref, ref } from "vue";
 import { IFieldState, ReferenceOrSchema } from "./types";
-import { AnyObject, ISchema, Schema, ValidateOptions, ValidationError } from "yup";
+import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
 import { isLazySchema, isObjectSchema, isSchema } from "./util";
 import { Form } from "./Form";
 
@@ -39,16 +39,17 @@ export class Field implements IFieldState {
 
     public static initializeField(
         schema: ReferenceOrSchema,
-        options: ValidateOptions,
-        initialValue: any
+        initialValue: any,
+        options: ValidateOptions
     ): IFieldState | undefined {
         if (isObjectSchema(schema)) {
-            return Form.initializeForm(schema, options, initialValue);
+            return Form.initializeForm(schema, initialValue, options);
         } else if (isLazySchema(schema)) {
             schema = schema.resolve({ value: initialValue });
-            return Field.initializeField(schema, options, initialValue);
+            return Field.initializeField(schema, initialValue, options);
         } else if (isSchema(schema)) {
-            return new Field(schema, initialValue, options);
+            const value = initialValue ?? schema.spec.default ?? null;
+            return new Field(schema, value, options);
         } else {
             return undefined;
         }
