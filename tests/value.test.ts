@@ -7,7 +7,6 @@ import {
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
-import { lazy } from "yup";
 
 it("value is not null or undefined", () => {
     const form = useFormValidation({ schema: testSchema });

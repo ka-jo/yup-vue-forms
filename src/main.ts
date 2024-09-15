@@ -1,119 +1,15 @@
-import type {
-    AnyObject,
-    SchemaDescription,
-    SchemaFieldDescription,
-    SchemaLazyDescription,
-    SchemaObjectDescription,
-    SchemaRefDescription,
-} from "yup";
-import { reactive, ref, Ref } from "vue";
-import { FieldState, FormState, FormValidation, FormValidationOptions, PartialDeep } from "./types";
+import { reactive } from "vue";
+import type { FormValidation, FormValidationOptions } from "./types";
+import { Form } from "./Form";
 
 export function useFormValidation<T extends object>(
     input: FormValidationOptions<T>
 ): FormValidation<T> {
     input.value ??= {} as Partial<T>;
 
-    const description = input.schema.describe({ value: input.value });
-
-    const form = initializeObjectFormField(description, input.value);
-
+    const form = Form.initializeForm(input.schema, input, input.value);
+    //@ts-ignore: we're relying on the deep ref unwrapping functionality of reactive,
+    // but the typing for reactive isn't as robust as this functionality
+    // https://github.com/vuejs/core/issues/1324#issuecomment-747479802
     return reactive(form) as FormValidation<T>;
 }
-
-function isObjectFieldDescription(
-    description: SchemaFieldDescription
-): description is SchemaObjectDescription {
-    return description.type === "object";
-}
-
-function initializeObjectFormField<T extends object>(
-    schema: SchemaObjectDescription,
-    initialValue: PartialDeep<T> | undefined
-): FormState {
-    const fieldValues: Record<string, unknown> = Object.assign({}, schema.default, initialValue);
-    const value: Record<string, Ref<unknown>> = {} as any;
-    const fields: Record<string, FieldState> = {} as any;
-
-    for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
-        const nestedField = initializeFormField(fieldSchema, fieldValues[fieldName]);
-        if (nestedField) {
-            value[fieldName] = nestedField.value;
-            fields[fieldName] = nestedField;
-        }
-    }
-
-    return {
-        value: ref(value),
-        fields: fields,
-    };
-}
-
-function initializeFormField<T>(
-    schema: SchemaFieldDescription,
-    initialValue: unknown | undefined
-): FieldState | null {
-    if (isObjectFieldDescription(schema)) {
-        return initializeObjectFormField(schema, initialValue as AnyObject);
-    } else if (isSchemaDescription(schema)) {
-        return initializePrimitiveFormField(schema, initialValue);
-    } else if (isLazyFieldDescription(schema)) {
-        return initializeLazyFormField(schema, initialValue);
-    } else {
-        return null;
-    }
-}
-
-function initializePrimitiveFormField<T>(
-    schema: SchemaDescription,
-    initialValue: T | undefined
-): FieldState {
-    const value = (initialValue ?? schema.default ?? null) as NonNullable<T> | null;
-    return { value: ref(value) };
-}
-
-/*  After testing Yup's schema.describe method, it would seem schema descriptions
-    are only type 'lazy' when no value is passed to schema.describe, 
-    so this case should not be possible */
-function initializeLazyFormField<T>(schema: SchemaLazyDescription, initialValue?: T): FieldState {
-    const value = initialValue ?? null;
-    return { value: ref(value) };
-}
-
-function isRefFieldDescription(
-    description: SchemaFieldDescription
-): description is SchemaRefDescription {
-    return description.type === "ref";
-}
-
-function isSchemaDescription(
-    description: SchemaFieldDescription
-): description is SchemaDescription {
-    return "default" in description;
-}
-
-function isLazyFieldDescription(
-    description: SchemaFieldDescription
-): description is SchemaLazyDescription {
-    return description.type === "lazy";
-}
-
-// const name = object({
-//     first: string().required(),
-//     last: string().notRequired(),
-// });
-
-// const user = object({
-//     name: name.default(null).required(),
-//     age: number().required(),
-// });
-
-// const form = useFormValidation({
-//     schema: user,
-//     value: {
-//         name: {
-//             first: "John",
-//         },
-//         age: 25,
-//     },
-// });

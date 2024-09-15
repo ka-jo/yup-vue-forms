@@ -1,7 +1,7 @@
-import { Ref } from "vue";
-import { AnyObject, ObjectSchema } from "yup";
+import { Ref, UnwrapNestedRefs } from "vue";
+import { AnyObject, ISchema, ObjectSchema, Reference, ValidateOptions } from "yup";
 
-export interface FormValidationOptions<T extends AnyObject> {
+export interface FormValidationOptions<T extends AnyObject> extends ValidateOptions {
     value?: PartialDeep<T>;
     schema: ObjectSchema<T>;
 }
@@ -12,19 +12,48 @@ export type PartialDeep<T> = {
         : T[key];
 };
 
-export interface FieldState {
+export interface IFieldState {
     value: Ref<unknown>;
+    errors: Ref<Iterable<string>>;
+    isValid: Ref<boolean>;
+
+    validate(): boolean;
 }
 
-export interface FormState extends FieldState {
-    fields: Record<string, FieldState>;
+export interface FieldState extends IFieldState {
+    value: Ref<unknown>;
+    errors: Ref<string[]>;
+    isValid: Ref<boolean>;
+
+    validate(): boolean;
 }
 
-export interface FieldValidation<T> {
+export interface FormState extends IFieldState {
+    errors: Ref<UnwrapNestedRefs<FormErrorState>>;
+    fields: Record<string, IFieldState>;
+}
+
+export type FormErrorState = Iterable<string> & {
+    [key: string]: Ref<Iterable<string>>;
+};
+
+export interface IFieldValidation<T> {
     value: T;
+    errors: Iterable<string>;
+    isValid: boolean;
+
+    validate(): boolean;
 }
 
-export interface FormValidation<T extends AnyObject> extends FieldValidation<FormValue<T>> {
+export interface FieldValidation<T> extends IFieldValidation<T> {
+    value: T;
+    errors: string[];
+    isValid: boolean;
+
+    validate(): boolean;
+}
+
+export interface FormValidation<T extends AnyObject> extends IFieldValidation<FormValue<T>> {
     value: FormValue<T>;
     fields: FormFields<T>;
 }
@@ -38,8 +67,16 @@ export type FormValue<T extends AnyObject> = {
 export type FormFields<T extends AnyObject> = {
     [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
         ? FormValidation<NonNullable<T[key]>>
-        : FieldValidation<T[key]>;
+        : IFieldValidation<T[key]>;
 };
+
+export type FormErrors<T extends AnyObject> = Iterable<string> & {
+    [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
+        ? Ref<FormErrors<NonNullable<T[key]>>>
+        : Ref<Iterable<string>>;
+};
+
+export type ReferenceOrSchema = Reference<any> | ISchema<any, any, any, any>;
 
 type User = {
     name: string;

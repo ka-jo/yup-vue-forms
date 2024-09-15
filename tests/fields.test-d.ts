@@ -1,4 +1,4 @@
-import { FormValidation, FormFields, FieldValidation } from "@/types";
+import { FormValidation, FormFields, IFieldValidation } from "@/types";
 
 it("FormValidation.fields is type FormFields", () => {
     expectTypeOf<FormValidation<TestType>["fields"]>().toEqualTypeOf<FormFields<TestType>>();
@@ -24,31 +24,31 @@ describe("FormFields type includes all fields", () => {
 
         it("string field is FieldValidation<string>", () => {
             expectTypeOf<FormFields<TestType>["stringField"]>().toEqualTypeOf<
-                FieldValidation<string>
+                IFieldValidation<string>
             >();
         });
 
         it("number field is FieldValidation<number>", () => {
             expectTypeOf<FormFields<TestType>["numberField"]>().toEqualTypeOf<
-                FieldValidation<number>
+                IFieldValidation<number>
             >();
         });
 
         it("boolean field is FieldValidation<boolean>", () => {
             expectTypeOf<FormFields<TestType>["booleanField"]>().toEqualTypeOf<
-                FieldValidation<boolean>
+                IFieldValidation<boolean>
             >();
         });
 
         it("primitive fields are type FieldValidation", () => {
             expectTypeOf<FormFields<TestType>["stringField"]>().toEqualTypeOf<
-                FieldValidation<string>
+                IFieldValidation<string>
             >();
             expectTypeOf<FormFields<TestType>["numberField"]>().toEqualTypeOf<
-                FieldValidation<number>
+                IFieldValidation<number>
             >();
             expectTypeOf<FormFields<TestType>["booleanField"]>().toEqualTypeOf<
-                FieldValidation<boolean>
+                IFieldValidation<boolean>
             >();
         });
 
