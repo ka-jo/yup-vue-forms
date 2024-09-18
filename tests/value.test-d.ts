@@ -4,11 +4,16 @@ it("FormValidation.value is type FormValue", () => {
     expectTypeOf<FormValidation<TestType>["value"]>().toEqualTypeOf<FormValue<TestType>>();
 });
 
-it("object value is not null or undefined", () => {
+it("FormValue is not null or undefined", () => {
     expectTypeOf<FormValue<TestType>>().not.toBeNullable();
 });
 
-describe("object value includes all fields", () => {
+it("FormValue generic must be an object", () => {
+    //@ts-expect-error
+    expectTypeOf<FormValue<string>>().toBeObject();
+});
+
+describe("FormValue includes all fields of generic", () => {
     describe("including optional fields", () => {
         it("optional fields cannot be undefined", () => {
             expectTypeOf<FormValue<TestType>["optionalField"]>()

@@ -6,5 +6,6 @@ export default defineConfig({
     plugins: [tsconfigPaths()],
     test: {
         globals: true,
+        setupFiles: ["./tests/util/expect-to-be-iterable.ts"],
     },
 });

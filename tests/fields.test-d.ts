@@ -4,11 +4,16 @@ it("FormValidation.fields is type FormFields", () => {
     expectTypeOf<FormValidation<TestType>["fields"]>().toEqualTypeOf<FormFields<TestType>>();
 });
 
-it("FormFields type is not null or undefined", () => {
+it("FormFields is not null or undefined", () => {
     expectTypeOf<FormFields<TestType>>().not.toBeNullable();
 });
 
-describe("FormFields type includes all fields", () => {
+it("FormFields generic must be an object", () => {
+    //@ts-expect-error
+    expectTypeOf<FormFields<string>>().toBeObject();
+});
+
+describe("FormFields includes all fields of generic", () => {
     describe("including optional fields", () => {
         it("optional fields are not null or undefined", () => {
             expectTypeOf<FormFields<TestType>["optionalField"]>().not.toBeNull();
@@ -35,18 +40,6 @@ describe("FormFields type includes all fields", () => {
         });
 
         it("boolean field is FieldValidation<boolean>", () => {
-            expectTypeOf<FormFields<TestType>["booleanField"]>().toEqualTypeOf<
-                IFieldValidation<boolean>
-            >();
-        });
-
-        it("primitive fields are type FieldValidation", () => {
-            expectTypeOf<FormFields<TestType>["stringField"]>().toEqualTypeOf<
-                IFieldValidation<string>
-            >();
-            expectTypeOf<FormFields<TestType>["numberField"]>().toEqualTypeOf<
-                IFieldValidation<number>
-            >();
             expectTypeOf<FormFields<TestType>["booleanField"]>().toEqualTypeOf<
                 IFieldValidation<boolean>
             >();
