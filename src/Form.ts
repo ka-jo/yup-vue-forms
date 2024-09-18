@@ -25,6 +25,8 @@ export class Form implements FormState {
         this.errors = ref(errors);
         this.isValid = ref(false);
         this.fields = fields;
+        // binding validate to instance so "this" isn't bound to Vue's reactive proxy
+        this.validate = this.validate.bind(this);
     }
 
     validate(): boolean {
@@ -51,7 +53,7 @@ export class Form implements FormState {
         const defaultValue = Object.assign({}, schema.spec.default, initialValue);
         const fields: Record<string, IFieldState> = {};
         const value: Record<string, Ref<unknown>> = {};
-        const errors: FormErrorState = { [Symbol.iterator]: Form.errorIterator };
+        const errors: FormErrorState = Form.initializeErrorState();
 
         for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
             const nestedField = Field.initializeField(
@@ -70,9 +72,16 @@ export class Form implements FormState {
         return new Form(options, schema, value, errors, fields);
     }
 
-    private static *errorIterator(this: UnwrapNestedRefs<FormErrorState>): Iterator<string> {
+    private static initializeErrorState(): FormErrorState {
+        const errors: FormErrorState = {} as FormErrorState;
+        errors[Symbol.iterator] = Form.errorIterator.bind(errors);
+        return errors;
+    }
+
+    private static *errorIterator(this: FormErrorState): Iterator<string> {
         for (const field in this) {
-            for (const error of this[field]) {
+            //this[field] is a Ref<Iterable<string>>
+            for (const error of this[field].value) {
                 yield error;
             }
         }

@@ -19,6 +19,8 @@ export class Field implements IFieldState {
         this.value = ref(value);
         this.errors = ref([]);
         this.isValid = ref(false);
+
+        this.validate = this.validate.bind(this);
     }
 
     validate(): boolean {

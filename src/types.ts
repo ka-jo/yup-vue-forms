@@ -38,7 +38,7 @@ export type FormErrorState = Iterable<string> & {
 };
 
 export interface IFieldValidation<T> {
-    value: T;
+    value: T | null;
     errors: Iterable<string>;
     isValid: boolean;
 
@@ -46,7 +46,7 @@ export interface IFieldValidation<T> {
 }
 
 export interface FieldValidation<T> extends IFieldValidation<T> {
-    value: T;
+    value: T | null;
     errors: string[];
     isValid: boolean;
 
@@ -56,6 +56,7 @@ export interface FieldValidation<T> extends IFieldValidation<T> {
 export interface FormValidation<T extends AnyObject> extends IFieldValidation<FormValue<T>> {
     value: FormValue<T>;
     fields: FormFields<T>;
+    errors: FormErrors<T>;
 }
 
 export type FormValue<T extends AnyObject> = {
@@ -72,8 +73,8 @@ export type FormFields<T extends AnyObject> = {
 
 export type FormErrors<T extends AnyObject> = Iterable<string> & {
     [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
-        ? Ref<FormErrors<NonNullable<T[key]>>>
-        : Ref<Iterable<string>>;
+        ? FormErrors<NonNullable<T[key]>>
+        : Array<string>;
 };
 
 export type ReferenceOrSchema = Reference<any> | ISchema<any, any, any, any>;
@@ -97,6 +98,7 @@ type State = {
 
 const form: FormValidation<User> = {} as any;
 form.value.name; // string | null
+form.fields.name.value;
 form.value.age; // number | null
 form.value.address.street;
 form.value.address.city;
