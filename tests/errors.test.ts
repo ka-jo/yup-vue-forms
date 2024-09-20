@@ -1,5 +1,6 @@
 import { useFormValidation } from "@/main";
-import { NestedObject, TestSchema, testSchema } from "./fixtures/test-schema";
+import { testSchema } from "./fixtures/test-schema";
+import { computed } from "vue";
 
 it("errors is not null or undefined", () => {
     const form = useFormValidation({ schema: testSchema });
@@ -104,6 +105,12 @@ describe("errors are updated when validate is called", () => {
                 nestedRequiredField: ["this is a required field"],
             },
         });
+
+        expect(Array.from(form.errors)).toEqual([
+            "this is a required field",
+            "this is a required field",
+            "this is a required field",
+        ]);
     });
 
     it("with empty array for valid fields", () => {
@@ -154,4 +161,19 @@ describe("errors are updated when validate is called", () => {
             requiredField: [],
         });
     });
+});
+
+it("errors are reactive when used as an iterable", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const getErrorsSpy = vi.fn(() => Array.from(form.errors));
+    const errors = computed(getErrorsSpy);
+
+    expect(errors.value).toMatchObject([]);
+    expect(getErrorsSpy).toHaveBeenCalledTimes(1);
+
+    form.value.requiredField = "";
+    form.validate();
+
+    expect(errors.value).toMatchObject([expect.stringContaining("required")]);
+    expect(getErrorsSpy).toHaveBeenCalledTimes(2);
 });
