@@ -1,11 +1,11 @@
 import { FormValidation, FormErrors } from "@/types";
 
 it("FormValidation.errors is type FormErrors", () => {
-    expectTypeOf<FormValidation<TestType>["errors"]>().toEqualTypeOf<FormErrors<TestType>>();
+    expectTypeOf<FormValidation<TestSchema>["errors"]>().toEqualTypeOf<FormErrors<TestSchema>>();
 });
 
 it("FormErrors is not null or undefined", () => {
-    expectTypeOf<FormErrors<TestType>>().not.toBeNullable();
+    expectTypeOf<FormErrors<TestSchema>>().not.toBeNullable();
 });
 
 it("FormErrors generic must be an object", () => {
@@ -14,38 +14,38 @@ it("FormErrors generic must be an object", () => {
 });
 
 it("FormErrors is Iterable<string>", () => {
-    expectTypeOf<FormErrors<TestType>>().toMatchTypeOf<Iterable<string>>();
+    expectTypeOf<FormErrors<TestSchema>>().toMatchTypeOf<Iterable<string>>();
 });
 
 describe("FormErrors includes all fields of generic", () => {
     describe("including optional fields", () => {
         it("optional fields are not null or undefined", () => {
-            expectTypeOf<FormErrors<TestType>["optionalField"]>().not.toBeNull();
-            expectTypeOf<FormErrors<TestType>["optionalField"]>().not.toBeUndefined();
+            expectTypeOf<FormErrors<TestSchema>["optionalField"]>().not.toBeNull();
+            expectTypeOf<FormErrors<TestSchema>["optionalField"]>().not.toBeUndefined();
         });
     });
 
     describe("including required fields", () => {
         it("required fields are not null or undefined", () => {
-            expectTypeOf<FormErrors<TestType>["requiredField"]>().not.toBeNull();
-            expectTypeOf<FormErrors<TestType>["requiredField"]>().not.toBeUndefined();
+            expectTypeOf<FormErrors<TestSchema>["requiredField"]>().not.toBeNull();
+            expectTypeOf<FormErrors<TestSchema>["requiredField"]>().not.toBeUndefined();
         });
 
         it("string field is Array<string>", () => {
-            expectTypeOf<FormErrors<TestType>["stringField"]>().toEqualTypeOf<Array<string>>();
+            expectTypeOf<FormErrors<TestSchema>["stringField"]>().toEqualTypeOf<Array<string>>();
         });
 
         it("number field is Array<string>", () => {
-            expectTypeOf<FormErrors<TestType>["numberField"]>().toEqualTypeOf<Array<string>>();
+            expectTypeOf<FormErrors<TestSchema>["numberField"]>().toEqualTypeOf<Array<string>>();
         });
 
         it("boolean field is Array<string>", () => {
-            expectTypeOf<FormErrors<TestType>["booleanField"]>().toEqualTypeOf<Array<string>>();
+            expectTypeOf<FormErrors<TestSchema>["booleanField"]>().toEqualTypeOf<Array<string>>();
         });
 
         it("object fields are type FormErrors", () => {
-            expectTypeOf<FormErrors<TestType>["nestedObjectField"]>().toEqualTypeOf<
-                FormErrors<TestType["nestedObjectField"]>
+            expectTypeOf<FormErrors<TestSchema>["nestedObjectField"]>().toEqualTypeOf<
+                FormErrors<TestSchema["nestedObjectField"]>
             >();
         });
     });

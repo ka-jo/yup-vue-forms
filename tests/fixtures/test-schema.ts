@@ -11,27 +11,6 @@ export const DEFAULT_OBJECT = {
     nestedBooleanField: true,
 } as NestedObject;
 
-export type TestSchema = {
-    requiredField: string;
-    optionalField?: string | null;
-    stringField: string;
-    numberField: number;
-    booleanField: boolean;
-    nestedObjectField: NestedObject;
-    lazyObjectField: NestedObject | null;
-    lazyStringField: string;
-    lazyNumberField: number;
-    lazyBooleanField: boolean;
-};
-
-export type NestedObject = {
-    nestedRequiredField: string;
-    nestedOptionalField?: string | null;
-    nestedStringField: string;
-    nestedNumberField: number;
-    nestedBooleanField: boolean;
-};
-
 export const nestedObjectSchema: ObjectSchema<NestedObject> = object({
     nestedRequiredField: string().required().default(DEFAULT_OBJECT.nestedRequiredField),
     nestedOptionalField: string().notRequired(),

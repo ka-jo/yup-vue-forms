@@ -1,11 +1,11 @@
 import { FormValidation, FormFields, IFieldValidation } from "@/types";
 
 it("FormValidation.fields is type FormFields", () => {
-    expectTypeOf<FormValidation<TestType>["fields"]>().toEqualTypeOf<FormFields<TestType>>();
+    expectTypeOf<FormValidation<TestSchema>["fields"]>().toEqualTypeOf<FormFields<TestSchema>>();
 });
 
 it("FormFields is not null or undefined", () => {
-    expectTypeOf<FormFields<TestType>>().not.toBeNullable();
+    expectTypeOf<FormFields<TestSchema>>().not.toBeNullable();
 });
 
 it("FormFields generic must be an object", () => {
@@ -16,38 +16,38 @@ it("FormFields generic must be an object", () => {
 describe("FormFields includes all fields of generic", () => {
     describe("including optional fields", () => {
         it("optional fields are not null or undefined", () => {
-            expectTypeOf<FormFields<TestType>["optionalField"]>().not.toBeNull();
-            expectTypeOf<FormFields<TestType>["optionalField"]>().not.toBeUndefined();
+            expectTypeOf<FormFields<TestSchema>["optionalField"]>().not.toBeNull();
+            expectTypeOf<FormFields<TestSchema>["optionalField"]>().not.toBeUndefined();
         });
     });
 
     describe("including required fields", () => {
         it("required fields are not null or undefined", () => {
-            expectTypeOf<FormFields<TestType>["requiredField"]>().not.toBeNull();
-            expectTypeOf<FormFields<TestType>["requiredField"]>().not.toBeUndefined();
+            expectTypeOf<FormFields<TestSchema>["requiredField"]>().not.toBeNull();
+            expectTypeOf<FormFields<TestSchema>["requiredField"]>().not.toBeUndefined();
         });
 
         it("string field is FieldValidation<string>", () => {
-            expectTypeOf<FormFields<TestType>["stringField"]>().toEqualTypeOf<
+            expectTypeOf<FormFields<TestSchema>["stringField"]>().toEqualTypeOf<
                 IFieldValidation<string>
             >();
         });
 
         it("number field is FieldValidation<number>", () => {
-            expectTypeOf<FormFields<TestType>["numberField"]>().toEqualTypeOf<
+            expectTypeOf<FormFields<TestSchema>["numberField"]>().toEqualTypeOf<
                 IFieldValidation<number>
             >();
         });
 
         it("boolean field is FieldValidation<boolean>", () => {
-            expectTypeOf<FormFields<TestType>["booleanField"]>().toEqualTypeOf<
+            expectTypeOf<FormFields<TestSchema>["booleanField"]>().toEqualTypeOf<
                 IFieldValidation<boolean>
             >();
         });
 
         it("object fields are type FormValidation", () => {
-            expectTypeOf<FormFields<TestType>["nestedObjectField"]>().toEqualTypeOf<
-                FormValidation<TestType["nestedObjectField"]>
+            expectTypeOf<FormFields<TestSchema>["nestedObjectField"]>().toEqualTypeOf<
+                FormValidation<TestSchema["nestedObjectField"]>
             >();
         });
     });
