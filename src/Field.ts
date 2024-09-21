@@ -1,4 +1,4 @@
-import { Ref, ref } from "vue";
+import { customRef, Ref, ref } from "vue";
 import { IFieldState, ReferenceOrSchema } from "./types";
 import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
 import { isLazySchema, isObjectSchema, isSchema } from "./util";
@@ -6,21 +6,28 @@ import { Form } from "./Form";
 
 export class Field implements IFieldState {
     #schema: Schema<any>;
+    #value: unknown;
     #options: ValidateOptions<AnyObject>;
+    #triggerValue!: Function;
+    #trackValue!: Function;
 
     readonly value: Ref<unknown>;
     readonly errors: Ref<string[]>;
     readonly isValid: Ref<boolean>;
 
     private constructor(schema: Schema, value: unknown, options: ValidateOptions<AnyObject>) {
+        // binding methods to instance so "this" isn't bound to Vue's reactive proxy
+        this.validate = this.validate.bind(this);
+        this.getValue = this.getValue.bind(this);
+        this.setValue = this.setValue.bind(this);
+
         this.#schema = schema;
+        this.#value = value;
         this.#options = options;
 
-        this.value = ref(value);
+        this.value = Field.initializeValue(this);
         this.errors = ref([]);
         this.isValid = ref(false);
-
-        this.validate = this.validate.bind(this);
     }
 
     validate(): boolean {
@@ -39,21 +46,42 @@ export class Field implements IFieldState {
         return this.isValid.value;
     }
 
-    public static initializeField(
+    getValue() {
+        this.#trackValue();
+        return this.#value;
+    }
+
+    setValue(value: any) {
+        this.#value = value ?? this.#schema.spec.default ?? null;
+        this.#triggerValue();
+    }
+
+    public static createField(
         schema: ReferenceOrSchema,
         initialValue: any,
         options: ValidateOptions
     ): IFieldState | undefined {
         if (isObjectSchema(schema)) {
-            return Form.initializeForm(schema, initialValue, options);
+            return Form.createForm(schema, initialValue, options);
         } else if (isLazySchema(schema)) {
             schema = schema.resolve({ value: initialValue });
-            return Field.initializeField(schema, initialValue, options);
+            return Field.createField(schema, initialValue, options);
         } else if (isSchema(schema)) {
             const value = initialValue ?? schema.spec.default ?? null;
             return new Field(schema, value, options);
         } else {
             return undefined;
         }
+    }
+
+    private static initializeValue(field: Field): Ref<any> {
+        return customRef((track, trigger) => {
+            field.#triggerValue = trigger;
+            field.#trackValue = track;
+            return {
+                get: field.getValue,
+                set: field.setValue,
+            };
+        });
     }
 }

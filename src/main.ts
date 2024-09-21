@@ -7,7 +7,7 @@ export function useFormValidation<T extends object>(
 ): FormValidation<T> {
     input.value ??= {} as Partial<T>;
 
-    const form = Form.initializeForm(input.schema, input.value, input);
+    const form = Form.createForm(input.schema, input.value, input);
     //@ts-ignore: we're relying on the deep ref unwrapping functionality of reactive,
     // but the typing for reactive isn't as robust as this functionality
     // https://github.com/vuejs/core/issues/1324#issuecomment-747479802

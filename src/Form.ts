@@ -1,11 +1,18 @@
-import { Ref, ref, UnwrapNestedRefs } from "vue";
+import { customRef, reactive, Ref, ref, UnwrapNestedRefs } from "vue";
 import { ObjectSchema, AnyObject, ValidateOptions } from "yup";
 import { FormState, IFieldState, FormErrorState } from "./types";
 import { Field } from "./Field";
 
 export class Form implements FormState {
-    #options: ValidateOptions;
     #schema: ObjectSchema<AnyObject>;
+    /**
+     * Internal reactive object containing the form state
+     * @remarks This should be treated as an empty object: we don't know its properties and we shouldn't access them directly
+     */
+    #value: object;
+    #options: ValidateOptions;
+    #trackValue!: Function;
+    #triggerValue!: Function;
 
     value: Ref<AnyObject>;
     errors: Ref<UnwrapNestedRefs<FormErrorState>>;
@@ -15,18 +22,23 @@ export class Form implements FormState {
     constructor(
         options: ValidateOptions<AnyObject>,
         schema: ObjectSchema<any>,
-        value: AnyObject,
+        value: Record<string, Ref<unknown>>,
         errors: FormErrorState,
         fields: Record<string, IFieldState>
     ) {
+        // binding methods to instance so "this" isn't bound to Vue's reactive proxy
+        this.validate = this.validate.bind(this);
+        this.getValue = this.getValue.bind(this);
+        this.setValue = this.setValue.bind(this);
+
         this.#schema = schema;
+        this.#value = reactive(value);
         this.#options = options;
-        this.value = ref(value);
+
+        this.value = Form.initializeValue(this);
         this.errors = ref(errors);
         this.isValid = ref(false);
         this.fields = fields;
-        // binding validate to instance so "this" isn't bound to Vue's reactive proxy
-        this.validate = this.validate.bind(this);
     }
 
     validate(): boolean {
@@ -45,7 +57,22 @@ export class Form implements FormState {
         return isValid;
     }
 
-    public static initializeForm(
+    getValue() {
+        this.#trackValue();
+        return this.#value;
+    }
+
+    setValue(value: AnyObject) {
+        value = Object.assign({}, this.#schema.spec.default, value);
+        for (const fieldName in this.fields) {
+            const field = this.fields[fieldName];
+            field.setValue(value[fieldName]);
+        }
+
+        this.#triggerValue();
+    }
+
+    public static createForm(
         schema: ObjectSchema<any>,
         initialValue: AnyObject | undefined,
         options: ValidateOptions
@@ -53,14 +80,12 @@ export class Form implements FormState {
         const defaultValue = Object.assign({}, schema.spec.default, initialValue);
         const fields: Record<string, IFieldState> = {};
         const value: Record<string, Ref<unknown>> = {};
-        const errors: FormErrorState = Form.initializeErrorState();
+        const errors: FormErrorState = Form.createErrorState();
 
-        for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
-            const nestedField = Field.initializeField(
-                fieldSchema,
-                defaultValue[fieldName],
-                options
-            );
+        for (const fieldName in schema.fields) {
+            const fieldSchema = schema.fields[fieldName];
+
+            const nestedField = Field.createField(fieldSchema, defaultValue[fieldName], options);
 
             if (nestedField) {
                 fields[fieldName] = nestedField;
@@ -72,7 +97,7 @@ export class Form implements FormState {
         return new Form(options, schema, value, errors, fields);
     }
 
-    private static initializeErrorState(): FormErrorState {
+    private static createErrorState(): FormErrorState {
         const errors: FormErrorState = {} as FormErrorState;
         errors[Symbol.iterator] = Form.errorIterator.bind(errors);
         return errors;
@@ -80,10 +105,20 @@ export class Form implements FormState {
 
     private static *errorIterator(this: FormErrorState): Iterator<string> {
         for (const field in this) {
-            //this[field] is a Ref<Iterable<string>>
             for (const error of this[field].value) {
                 yield error;
             }
         }
+    }
+
+    private static initializeValue(form: Form): Ref<AnyObject> {
+        return customRef((track, trigger) => {
+            form.#trackValue = track;
+            form.#triggerValue = trigger;
+            return {
+                get: form.getValue,
+                set: form.setValue,
+            };
+        });
     }
 }

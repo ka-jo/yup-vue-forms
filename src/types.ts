@@ -8,8 +8,8 @@ export interface FormValidationOptions<T extends AnyObject> extends ValidateOpti
 
 export type PartialDeep<T> = {
     [key in keyof T]?: NonNullable<T[key]> extends object
-        ? PartialDeep<NonNullable<T[key]>>
-        : T[key];
+        ? PartialDeep<NonNullable<T[key]>> | null
+        : T[key] | null;
 };
 
 export interface IFieldState {
@@ -18,14 +18,12 @@ export interface IFieldState {
     isValid: Ref<boolean>;
 
     validate(): boolean;
+    getValue(): unknown;
+    setValue(value: unknown): void;
 }
 
 export interface FieldState extends IFieldState {
-    value: Ref<unknown>;
-    errors: Ref<string[]>;
-    isValid: Ref<boolean>;
-
-    validate(): boolean;
+    errors: Ref<ReadonlyArray<string>>;
 }
 
 export interface FormState extends IFieldState {
@@ -39,22 +37,21 @@ export type FormErrorState = Iterable<string> & {
 
 export interface IFieldValidation<T> {
     value: T | null;
-    errors: Iterable<string>;
-    isValid: boolean;
+    readonly errors: Iterable<string>;
+    readonly isValid: boolean;
 
     validate(): boolean;
+    getValue(): T | null;
+    setValue(value: T | null | undefined): void;
 }
 
 export interface FieldValidation<T> extends IFieldValidation<T> {
-    value: T | null;
-    errors: string[];
-    isValid: boolean;
-
-    validate(): boolean;
+    readonly errors: ReadonlyArray<string>;
 }
 
 export interface FormValidation<T extends AnyObject> extends IFieldValidation<FormValue<T>> {
-    value: FormValue<T>;
+    get value(): FormValue<T>;
+    set value(value: PartialDeep<T>);
     fields: FormFields<T>;
     errors: FormErrors<T>;
 }

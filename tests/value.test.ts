@@ -7,6 +7,7 @@ import {
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
+import { validTestObject } from "./fixtures/valid-value";
 
 it("value is not null or undefined", () => {
     const form = useFormValidation({ schema: testSchema });
@@ -110,6 +111,32 @@ describe("value is initialized with default values", () => {
                 nestedNumberField: DEFAULT_OBJECT.nestedNumberField,
                 nestedBooleanField: DEFAULT_OBJECT.nestedBooleanField,
             },
+        });
+    });
+});
+
+describe("value can be set with a partial", () => {
+    it("using empty object", () => {
+        const form = useFormValidation({ schema: testSchema });
+        form.value = {};
+    });
+
+    it("reinitializes value with defaults", () => {
+        const form = useFormValidation({ schema: testSchema });
+        form.value = validTestObject;
+        expect(form.value).toMatchObject(validTestObject);
+        form.value = {};
+        expect(form.value).toMatchObject({
+            requiredField: DEFAULT_STRING,
+            optionalField: null,
+            stringField: DEFAULT_STRING,
+            numberField: DEFAULT_NUMBER,
+            booleanField: DEFAULT_BOOLEAN,
+            nestedObjectField: DEFAULT_OBJECT,
+            lazyObjectField: DEFAULT_OBJECT,
+            lazyStringField: DEFAULT_STRING,
+            lazyNumberField: DEFAULT_NUMBER,
+            lazyBooleanField: DEFAULT_BOOLEAN,
         });
     });
 });
