@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "main": "index.js",
+  "packageManager": "pnpm@9.11.0",
   "scripts": {
     "test": "vitest --typecheck"
   },
