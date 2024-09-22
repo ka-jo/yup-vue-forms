@@ -1,6 +1,6 @@
-import { customRef, reactive, Ref, ref, UnwrapNestedRefs } from "vue";
+import { computed, customRef, reactive, readonly, Ref, ref, UnwrapNestedRefs } from "vue";
 import { ObjectSchema, AnyObject, ValidateOptions } from "yup";
-import { FormState, IFieldState, FormErrorState } from "./types";
+import { FormState, IFieldState, FormErrorState, FormErrors, ReadonlyRef } from "./types";
 import { Field } from "./Field";
 
 export class Form implements FormState {
@@ -11,19 +11,20 @@ export class Form implements FormState {
      */
     #value: object;
     #options: ValidateOptions;
+    #fields: Record<string, IFieldState>;
     #trackValue!: Function;
     #triggerValue!: Function;
 
-    value: Ref<AnyObject>;
-    errors: Ref<UnwrapNestedRefs<FormErrorState>>;
-    isValid: Ref<boolean>;
-    fields: Record<string, IFieldState>;
+    readonly value: Ref<AnyObject>;
+    readonly errors: ReadonlyRef<UnwrapNestedRefs<FormErrorState>>;
+    readonly isValid: ReadonlyRef<boolean>;
+    readonly fields: ReadonlyRef<Record<string, IFieldState>>;
 
     constructor(
         options: ValidateOptions<AnyObject>,
         schema: ObjectSchema<any>,
         value: Record<string, Ref<unknown>>,
-        errors: FormErrorState,
+        errors: Record<string, ReadonlyRef<Iterable<string>>>,
         fields: Record<string, IFieldState>
     ) {
         // binding methods to instance so "this" isn't bound to Vue's reactive proxy
@@ -34,27 +35,25 @@ export class Form implements FormState {
         this.#schema = schema;
         this.#value = reactive(value);
         this.#options = options;
+        this.#fields = fields;
 
         this.value = Form.initializeValue(this);
-        this.errors = ref(errors);
-        this.isValid = ref(false);
-        this.fields = fields;
+        this.errors = Form.initializeErrors(errors);
+        this.isValid = Form.initializeIsValid(this);
+        this.fields = Form.initializeFields(fields);
     }
 
     validate(): boolean {
-        let isValid = true;
-        for (const field of Object.values(this.fields)) {
+        for (const field of Object.values(this.#fields)) {
             const isFieldValid = field.validate();
             if (isFieldValid === false) {
-                isValid = false;
                 if (this.#options.abortEarly) {
                     break;
                 }
             }
         }
-        this.isValid.value = isValid;
 
-        return isValid;
+        return this.isValid.value;
     }
 
     getValue() {
@@ -64,8 +63,8 @@ export class Form implements FormState {
 
     setValue(value: AnyObject) {
         value = Object.assign({}, this.#schema.spec.default, value);
-        for (const fieldName in this.fields) {
-            const field = this.fields[fieldName];
+        for (const fieldName of Object.keys(this.#fields)) {
+            const field = this.#fields[fieldName];
             field.setValue(value[fieldName]);
         }
 
@@ -80,12 +79,10 @@ export class Form implements FormState {
         const defaultValue = Object.assign({}, schema.spec.default, initialValue);
         const fields: Record<string, IFieldState> = {};
         const value: Record<string, Ref<unknown>> = {};
-        const errors: FormErrorState = Form.createErrorState();
+        const errors: Record<string, ReadonlyRef<Iterable<string>>> = {};
 
         for (const fieldName in schema.fields) {
-            const fieldSchema = schema.fields[fieldName];
-
-            const nestedField = Field.createField(fieldSchema, defaultValue[fieldName], options);
+            const nestedField = Field.createField(schema.fields[fieldName], defaultValue[fieldName], options);
 
             if (nestedField) {
                 fields[fieldName] = nestedField;
@@ -97,14 +94,8 @@ export class Form implements FormState {
         return new Form(options, schema, value, errors, fields);
     }
 
-    private static createErrorState(): FormErrorState {
-        const errors: FormErrorState = {} as FormErrorState;
-        errors[Symbol.iterator] = Form.errorIterator.bind(errors);
-        return errors;
-    }
-
-    private static *errorIterator(this: FormErrorState): Iterator<string> {
-        for (const field in this) {
+    private static *errorIterator(this: Record<string, Ref<Iterable<string>>>): Iterator<string> {
+        for (const field of Object.keys(this)) {
             for (const error of this[field].value) {
                 yield error;
             }
@@ -120,5 +111,30 @@ export class Form implements FormState {
                 set: form.setValue,
             };
         });
+    }
+
+    private static initializeErrors(errors: Record<string, Ref<Iterable<string>>>): ReadonlyRef<UnwrapNestedRefs<FormErrorState>> {
+        //@ts-expect-error: it doesn't like adding the iterable protocol because the type doesn't include it, but it's not worth it to get the type "correct"
+        errors[Symbol.iterator] = Form.errorIterator.bind(errors)
+        //@ts-expect-error: this method is a mess, but I'm tired of wrestling with typing
+        return readonly(ref(errors));
+    }
+
+    private static initializeIsValid(form: Form): Readonly<Ref<boolean>> {
+        return computed(() => Form.isValid(form));
+    }
+
+    private static initializeFields(fields: Record<string, IFieldState>): ReadonlyRef<Record<string, IFieldState>> {
+        const reactiveFields = reactive(fields);
+        return computed(() => reactiveFields);
+    }
+
+    private static isValid(form: Form) {
+        for (const fieldName of Object.keys(form.#fields)) {
+            if (form.#fields[fieldName].isValid.value === false) {
+                return false;
+            }
+        }
+        return true;
     }
 }

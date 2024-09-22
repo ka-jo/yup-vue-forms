@@ -12,10 +12,12 @@ export type PartialDeep<T> = {
         : T[key] | null;
 };
 
+export type ReadonlyRef<T> = Ref<T, never>;
+
 export interface IFieldState {
     value: Ref<unknown>;
-    errors: Ref<Iterable<string>>;
-    isValid: Ref<boolean>;
+    readonly errors: ReadonlyRef<Iterable<string>>;
+    readonly isValid: ReadonlyRef<boolean>;
 
     validate(): boolean;
     getValue(): unknown;
@@ -23,16 +25,16 @@ export interface IFieldState {
 }
 
 export interface FieldState extends IFieldState {
-    errors: Ref<ReadonlyArray<string>>;
+    readonly errors: ReadonlyRef<ReadonlyArray<string>>;
 }
 
 export interface FormState extends IFieldState {
-    errors: Ref<UnwrapNestedRefs<FormErrorState>>;
-    fields: Record<string, IFieldState>;
+    readonly errors: ReadonlyRef<UnwrapNestedRefs<FormErrorState>>;
+    readonly fields: ReadonlyRef<Record<string, IFieldState>>;
 }
 
 export type FormErrorState = Iterable<string> & {
-    [key: string]: Ref<Iterable<string>>;
+    readonly [key: string]: Ref<Iterable<string>>;
 };
 
 export interface IFieldValidation<T> {
@@ -52,8 +54,8 @@ export interface FieldValidation<T> extends IFieldValidation<T> {
 export interface FormValidation<T extends AnyObject> extends IFieldValidation<FormValue<T>> {
     get value(): FormValue<T>;
     set value(value: PartialDeep<T>);
-    fields: FormFields<T>;
-    errors: FormErrors<T>;
+    readonly fields: FormFields<T>;
+    readonly errors: FormErrors<T>;
 }
 
 export type FormValue<T extends AnyObject> = {

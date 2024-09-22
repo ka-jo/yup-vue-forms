@@ -32,3 +32,31 @@ describe("isValid is false", () => {
         expect(form.isValid).toBe(false);
     });
 });
+
+it("isValid updates with fields", () => {
+    const form = useFormValidation({ schema: testSchema, value: validTestObject });
+    const requiredField = form.fields.requiredField;
+
+    form.validate();
+
+    expect(requiredField.isValid).toBe(true);
+    expect(form.isValid).toBe(true);
+
+    requiredField.value = "";
+    requiredField.validate();
+
+    expect(requiredField.isValid).toBe(false);
+    expect(form.isValid).toBe(false);
+})
+
+it("isValid is read-only", () => {
+    const form = useFormValidation({ schema: testSchema });
+    expect(form.isValid).toBe(false);
+
+    expect(() => {
+        //@ts-expect-error
+        form.isValid = true;
+    }).toThrow();
+
+    expect(form.isValid).toBe(false);
+})

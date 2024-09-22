@@ -8,6 +8,18 @@ it("errors is not null or undefined", () => {
     expect(form.errors).not.toBeUndefined();
 });
 
+it("errors is read-only", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const errors = form.errors;
+
+    expect(() => {
+        //@ts-expect-error
+        form.errors = {} as any;
+    }).toThrow();
+
+    expect(form.errors).toMatchObject(errors);
+});
+
 it("errors includes all schema fields", () => {
     const form = useFormValidation({ schema: testSchema });
     expect(form.errors).toMatchObject<TestSchema>({
@@ -160,6 +172,18 @@ describe("errors are updated when validate is called", () => {
         expect(form.errors).toMatchObject({
             requiredField: [],
         });
+    });
+
+    it("even if validate is called on a field instead of the form", () => {
+        const form = useFormValidation({ schema: testSchema });
+        const requiredField = form.fields.requiredField;
+        form.value.requiredField = "";
+        requiredField.value = "";
+        requiredField.validate();
+
+        expect(requiredField.errors).toMatchObject([ expect.stringContaining("required") ]);
+        expect(form.errors).toMatchObject({ requiredField: [ expect.stringContaining("required") ] });
+        expect(Array.from(form.errors)).toMatchObject([ expect.stringContaining("required") ]);
     });
 });
 

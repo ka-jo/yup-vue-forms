@@ -12,7 +12,7 @@ export class Field implements IFieldState {
     #trackValue!: Function;
 
     readonly value: Ref<unknown>;
-    readonly errors: Ref<string[]>;
+    readonly errors: Ref<ReadonlyArray<string>>;
     readonly isValid: Ref<boolean>;
 
     private constructor(schema: Schema, value: unknown, options: ValidateOptions<AnyObject>) {
@@ -32,7 +32,7 @@ export class Field implements IFieldState {
 
     validate(): boolean {
         try {
-            this.#schema.validateSync(this.value.value, this.#options);
+            this.#schema.validateSync(this.#value, this.#options);
             this.isValid.value = true;
             this.errors.value = [];
         } catch (ex) {

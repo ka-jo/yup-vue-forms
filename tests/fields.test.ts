@@ -5,16 +5,26 @@ import {
     DEFAULT_NUMBER,
     DEFAULT_OBJECT,
     DEFAULT_STRING,
-    NestedObject,
-    TestSchema,
     testSchema,
 } from "./fixtures/test-schema";
 import { FormFields } from "@/types";
 
-it("fields are not null or undefined", () => {
+it("fields is not null or undefined", () => {
     const form = useFormValidation({ schema: testSchema });
     expect(form.fields).not.toBeNull();
     expect(form.fields).not.toBeUndefined();
+});
+
+it("fields is read-only", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const fields = form.fields;
+    
+    expect(() => {
+        //@ts-expect-error
+        form.fields = {} as any;
+    }).toThrow();
+
+    expect(form.fields).toMatchObject(fields);
 });
 
 it("fields includes all schema fields", () => {
