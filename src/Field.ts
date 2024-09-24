@@ -1,4 +1,4 @@
-import { customRef, readonly, Ref, ref } from "vue";
+import { computed, readonly, Ref, ref } from "vue";
 import { IFieldState, ReadonlyRef, ReferenceOrSchema } from "./types";
 import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
 import { isLazySchema, isObjectSchema, isSchema } from "./util";
@@ -6,12 +6,10 @@ import { Form } from "./Form";
 
 export class Field implements IFieldState {
     #schema: Schema<any>;
-    #value: unknown;
+    #value: Ref<unknown>;
     #errors: Ref<ReadonlyArray<string>>;
     #isValid: Ref<boolean>;
     #options: ValidateOptions<AnyObject>;
-    #triggerValue!: Function;
-    #trackValue!: Function;
 
     readonly value: Ref<unknown>;
     readonly errors: ReadonlyRef<ReadonlyArray<string>>;
@@ -24,19 +22,19 @@ export class Field implements IFieldState {
         this.setValue = this.setValue.bind(this);
 
         this.#schema = schema;
-        this.#value = value;
+        this.#value = ref(value);
         this.#errors = ref([]);
         this.#isValid = ref(false);
         this.#options = options;
 
-        this.value = Field.initializeValue(this);
+        this.value = computed({ get: this.getValue, set: this.setValue });
         this.errors = readonly(this.#errors);
         this.isValid = readonly(this.#isValid);
     }
 
     validate(): boolean {
         try {
-            this.#schema.validateSync(this.#value, this.#options);
+            this.#schema.validateSync(this.#value.value, this.#options);
             this.#isValid.value = true;
             this.#errors.value = [];
         } catch (ex) {
@@ -47,17 +45,15 @@ export class Field implements IFieldState {
                 throw ex;
             }
         }
-        return this.isValid.value;
+        return this.#isValid.value;
     }
 
     getValue() {
-        this.#trackValue();
-        return this.#value;
+        return this.#value.value;
     }
 
     setValue(value: any) {
-        this.#value = value ?? this.#schema.spec.default ?? null;
-        this.#triggerValue();
+        this.#value.value = value ?? this.#schema.spec.default ?? null;
     }
 
     public static createField(
@@ -76,16 +72,5 @@ export class Field implements IFieldState {
         } else {
             return undefined;
         }
-    }
-
-    private static initializeValue(field: Field): Ref<any> {
-        return customRef((track, trigger) => {
-            field.#triggerValue = trigger;
-            field.#trackValue = track;
-            return {
-                get: field.getValue,
-                set: field.setValue,
-            };
-        });
     }
 }
