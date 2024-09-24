@@ -59,4 +59,18 @@ it("isValid is read-only", () => {
     }).toThrow();
 
     expect(form.isValid).toBe(false);
-})
+});
+
+it("field isValid is read-only", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const requiredField = form.fields.requiredField;
+
+    expect(requiredField.isValid).toBe(true);
+
+    expect(() => {
+        //@ts-expect-error
+        requiredField.isValid = false;
+    }).toThrow();
+
+    expect(requiredField.isValid).toBe(true);
+});

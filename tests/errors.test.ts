@@ -20,6 +20,18 @@ it("errors is read-only", () => {
     expect(form.errors).toMatchObject(errors);
 });
 
+it("field errors is readonly", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const requiredField = form.fields.requiredField;
+    const errors = requiredField.errors;
+    expect(() => {
+        //@ts-expect-error
+        requiredField.errors = ["test"];
+    }).toThrow();
+
+    expect(requiredField.errors).toBe(errors)
+});
+
 it("errors includes all schema fields", () => {
     const form = useFormValidation({ schema: testSchema });
     expect(form.errors).toMatchObject<TestSchema>({
@@ -106,6 +118,9 @@ describe("errors are updated when validate is called", () => {
         form.value.nestedObjectField.nestedRequiredField = "";
         form.value.lazyObjectField.nestedRequiredField = "";
 
+        const errors = { ...form.errors }
+        const thing = { ...form.errors.lazyObjectField }
+        const again = [...form.errors.requiredField]
         form.validate();
 
         expect(form.errors).toMatchObject({

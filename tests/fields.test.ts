@@ -27,6 +27,18 @@ it("fields is read-only", () => {
     expect(form.fields).toMatchObject(fields);
 });
 
+it("field fields is readonly", () => {
+    const form = useFormValidation({ schema: testSchema });
+    const nestedObject = form.fields.nestedObjectField;
+    const fields = nestedObject.fields;
+    expect(() => {
+        //@ts-expect-error
+        nestedObject.fields = {} as any;
+    }).toThrow();
+
+    expect(nestedObject.fields).toMatchObject(fields);
+});
+
 it("fields includes all schema fields", () => {
     const form = useFormValidation({ schema: testSchema });
     expect(form.fields).toMatchObject<FormFields<TestSchema>>({
