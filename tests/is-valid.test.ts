@@ -1,6 +1,6 @@
 import { useFormValidation } from "@/main";
 import { testSchema } from "./fixtures/test-schema";
-import { validTestObject } from "./fixtures/valid-value";
+import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 it("isValid is initialized to false", () => {
     const form = useFormValidation({ schema: testSchema });
@@ -9,7 +9,7 @@ it("isValid is initialized to false", () => {
 
 it("isValid is true when all fields are valid", () => {
     const form = useFormValidation({ schema: testSchema });
-    form.value = validTestObject;
+    form.value = VALID_TEST_OBJECT;
     form.validate();
     expect(form.isValid).toBe(true);
 });
@@ -34,7 +34,7 @@ describe("isValid is false", () => {
 });
 
 it("isValid updates with fields", () => {
-    const form = useFormValidation({ schema: testSchema, value: validTestObject });
+    const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
     const requiredField = form.fields.requiredField;
 
     form.validate();

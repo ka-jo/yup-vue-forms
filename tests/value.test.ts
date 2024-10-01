@@ -7,7 +7,7 @@ import {
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
-import { validTestObject } from "./fixtures/valid-value";
+import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 it("value is not null or undefined", () => {
     const form = useFormValidation({ schema: testSchema });
@@ -123,8 +123,8 @@ describe("value can be set with a partial", () => {
 
     it("reinitializes value with defaults", () => {
         const form = useFormValidation({ schema: testSchema });
-        form.value = validTestObject;
-        expect(form.value).toMatchObject(validTestObject);
+        form.value = VALID_TEST_OBJECT;
+        expect(form.value).toMatchObject(VALID_TEST_OBJECT);
         form.value = {};
         expect(form.value).toMatchObject({
             requiredField: DEFAULT_STRING,

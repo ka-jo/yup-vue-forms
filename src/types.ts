@@ -20,6 +20,7 @@ export interface IFieldState {
     readonly isValid: ReadonlyRef<boolean>;
 
     validate(): boolean;
+    reset(value?: unknown): void;
     getValue(): unknown;
     setValue(value: unknown): void;
 }

@@ -18,11 +18,12 @@ export class Field implements IFieldState {
     private constructor(schema: Schema, value: unknown, options: ValidateOptions<AnyObject>) {
         // binding methods to instance so "this" isn't bound to Vue's reactive proxy
         this.validate = this.validate.bind(this);
+        this.reset = this.reset.bind(this);
         this.getValue = this.getValue.bind(this);
         this.setValue = this.setValue.bind(this);
 
         this.#schema = schema;
-        this.#value = ref(value);
+        this.#value = ref(value ?? schema.spec.default ?? null);
         this.#errors = ref([]);
         this.#isValid = ref(false);
         this.#options = options;
@@ -48,6 +49,12 @@ export class Field implements IFieldState {
         return this.#isValid.value;
     }
 
+    reset(value?: unknown) {
+        this.setValue(value);
+        this.#isValid.value = false;
+        this.#errors.value = [];
+    }
+
     getValue() {
         return this.#value.value;
     }
@@ -67,8 +74,7 @@ export class Field implements IFieldState {
             schema = schema.resolve({ value: initialValue });
             return Field.createField(schema, initialValue, options);
         } else if (isSchema(schema)) {
-            const value = initialValue ?? schema.spec.default ?? null;
-            return new Field(schema, value, options);
+            return new Field(schema, initialValue, options);
         } else {
             return undefined;
         }

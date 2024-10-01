@@ -29,6 +29,7 @@ export class Form implements FormState {
     ) {
         // binding methods to instance so "this" isn't bound to Vue's reactive proxy
         this.validate = this.validate.bind(this);
+        this.reset = this.reset.bind(this);
         this.getValue = this.getValue.bind(this);
         this.setValue = this.setValue.bind(this);
 
@@ -54,6 +55,15 @@ export class Form implements FormState {
         }
 
         return this.isValid.value;
+    }
+
+    reset(value?: AnyObject) {
+        value = Object.assign({}, this.#schema.spec.default, value) as AnyObject;
+        for (const fieldName of Object.keys(this.#fields)) {
+            const field = this.#fields[fieldName];
+            field.reset(value[fieldName]);
+        }
+        this.#triggerValue();
     }
 
     getValue() {
@@ -82,7 +92,11 @@ export class Form implements FormState {
         const errors: Record<string, ReadonlyRef<Iterable<string>>> = {};
 
         for (const fieldName in schema.fields) {
-            const nestedField = Field.createField(schema.fields[fieldName], defaultValue[fieldName], options);
+            const nestedField = Field.createField(
+                schema.fields[fieldName],
+                defaultValue[fieldName],
+                options
+            );
 
             if (nestedField) {
                 fields[fieldName] = nestedField;
@@ -113,9 +127,11 @@ export class Form implements FormState {
         });
     }
 
-    private static initializeErrors(errors: Record<string, Ref<Iterable<string>>>): ReadonlyRef<UnwrapNestedRefs<FormErrorState>> {
+    private static initializeErrors(
+        errors: Record<string, Ref<Iterable<string>>>
+    ): ReadonlyRef<UnwrapNestedRefs<FormErrorState>> {
         //@ts-expect-error: it doesn't like adding the iterable protocol because the type doesn't include it, but it's not worth it to get the type "correct"
-        errors[Symbol.iterator] = Form.errorIterator.bind(errors)
+        errors[Symbol.iterator] = Form.errorIterator.bind(errors);
         //@ts-expect-error: this method is a mess, but I'm tired of wrestling with typing
         return readonly(ref(errors));
     }
@@ -124,7 +140,9 @@ export class Form implements FormState {
         return computed(() => Form.isValid(form));
     }
 
-    private static initializeFields(fields: Record<string, IFieldState>): ReadonlyRef<Record<string, IFieldState>> {
+    private static initializeFields(
+        fields: Record<string, IFieldState>
+    ): ReadonlyRef<Record<string, IFieldState>> {
         const reactiveFields = reactive(fields);
         return computed(() => reactiveFields);
     }

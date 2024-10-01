@@ -4,13 +4,14 @@ import {
     DEFAULT_NESTED_OBJECT,
     DEFAULT_NUMBER,
     DEFAULT_STRING,
+    DEFAULT_TEST_OBJECT,
     testSchema,
 } from "./fixtures/test-schema";
-import { validTestObject } from "./fixtures/valid-value";
+import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 describe("calling reset with no value", () => {
     it("sets value to schema default", () => {
-        const form = useFormValidation({ schema: testSchema, value: validTestObject });
+        const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
         form.reset();
         expect(form.value).toMatchObject({
             requiredField: DEFAULT_STRING,
@@ -42,14 +43,34 @@ describe("calling reset with no value", () => {
     });
 });
 
-it("calling reset with a value sets value to that value", () => {
-    const form = useFormValidation({ schema: testSchema, value: validTestObject });
-    form.reset({ requiredField: "a new value" });
-    expect(form.value).toMatchObject({ requiredField: "a new value" });
+describe("calling reset with a value", () => {
+    it("sets value to that value", () => {
+        const form = useFormValidation({ schema: testSchema });
+        expect(form.value).toMatchObject(DEFAULT_TEST_OBJECT);
+        form.reset(VALID_TEST_OBJECT);
+        expect(form.value).toMatchObject(VALID_TEST_OBJECT);
+    });
+
+    it("uses schema default for missing fields", () => {
+        const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
+        form.reset({ requiredField: "new field value" });
+        expect(form.value).toMatchObject({
+            requiredField: "new field value",
+            optionalField: null,
+            stringField: DEFAULT_STRING,
+            numberField: DEFAULT_NUMBER,
+            booleanField: DEFAULT_BOOLEAN,
+            nestedObjectField: DEFAULT_NESTED_OBJECT,
+            lazyObjectField: DEFAULT_NESTED_OBJECT,
+            lazyStringField: DEFAULT_STRING,
+            lazyNumberField: DEFAULT_NUMBER,
+            lazyBooleanField: DEFAULT_BOOLEAN,
+        });
+    });
 });
 
 it("callling reset sets isValid to false", () => {
-    const form = useFormValidation({ schema: testSchema, value: validTestObject });
+    const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
     form.validate();
     expect(form.isValid).toBe(true);
     form.reset();
