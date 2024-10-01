@@ -3,7 +3,7 @@ import { useFormValidation } from "@/main";
 import {
     DEFAULT_BOOLEAN,
     DEFAULT_NUMBER,
-    DEFAULT_OBJECT,
+    DEFAULT_NESTED_OBJECT,
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
@@ -40,8 +40,8 @@ describe("value is initialized with default values", () => {
             stringField: DEFAULT_STRING,
             numberField: DEFAULT_NUMBER,
             booleanField: DEFAULT_BOOLEAN,
-            nestedObjectField: DEFAULT_OBJECT,
-            lazyObjectField: DEFAULT_OBJECT,
+            nestedObjectField: DEFAULT_NESTED_OBJECT,
+            lazyObjectField: DEFAULT_NESTED_OBJECT,
             lazyStringField: DEFAULT_STRING,
             lazyNumberField: DEFAULT_NUMBER,
             lazyBooleanField: DEFAULT_BOOLEAN,
@@ -72,7 +72,7 @@ describe("value is initialized with default values", () => {
             booleanField: newValues.booleanField,
             optionalField: null,
             stringField: DEFAULT_STRING,
-            nestedObjectField: DEFAULT_OBJECT,
+            nestedObjectField: DEFAULT_NESTED_OBJECT,
             lazyStringField: newValues.lazyStringField,
             lazyNumberField: DEFAULT_NUMBER,
             lazyBooleanField: DEFAULT_BOOLEAN,
@@ -100,16 +100,16 @@ describe("value is initialized with default values", () => {
                 // Better that the optional field is not given a default so this can test that a field
                 // is initialized as null when no value is provided and no schema default is defined
                 nestedOptionalField: null,
-                nestedStringField: DEFAULT_OBJECT.nestedStringField,
+                nestedStringField: DEFAULT_NESTED_OBJECT.nestedStringField,
                 nestedNumberField: newValues.nestedObjectField.nestedNumberField,
                 nestedBooleanField: newValues.nestedObjectField.nestedBooleanField,
             },
             lazyObjectField: {
-                nestedRequiredField: DEFAULT_OBJECT.nestedRequiredField,
+                nestedRequiredField: DEFAULT_NESTED_OBJECT.nestedRequiredField,
                 nestedOptionalField: newValues.lazyObjectField.nestedOptionalField,
                 nestedStringField: newValues.lazyObjectField.nestedStringField,
-                nestedNumberField: DEFAULT_OBJECT.nestedNumberField,
-                nestedBooleanField: DEFAULT_OBJECT.nestedBooleanField,
+                nestedNumberField: DEFAULT_NESTED_OBJECT.nestedNumberField,
+                nestedBooleanField: DEFAULT_NESTED_OBJECT.nestedBooleanField,
             },
         });
     });
@@ -132,8 +132,8 @@ describe("value can be set with a partial", () => {
             stringField: DEFAULT_STRING,
             numberField: DEFAULT_NUMBER,
             booleanField: DEFAULT_BOOLEAN,
-            nestedObjectField: DEFAULT_OBJECT,
-            lazyObjectField: DEFAULT_OBJECT,
+            nestedObjectField: DEFAULT_NESTED_OBJECT,
+            lazyObjectField: DEFAULT_NESTED_OBJECT,
             lazyStringField: DEFAULT_STRING,
             lazyNumberField: DEFAULT_NUMBER,
             lazyBooleanField: DEFAULT_BOOLEAN,

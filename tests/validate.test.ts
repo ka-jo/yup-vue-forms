@@ -2,7 +2,7 @@ import { useFormValidation } from "@/main";
 import { testSchema } from "./fixtures/test-schema";
 import { validTestObject } from "./fixtures/valid-value";
 
-describe("FormValidation.validate returns boolean", () => {
+describe("validate returns boolean", () => {
     it("should return true if all fields are valid", () => {
         const form = useFormValidation({ schema: testSchema, value: validTestObject });
         const isValid = form.validate();

@@ -3,7 +3,7 @@ import { useFormValidation } from "@/main";
 import {
     DEFAULT_BOOLEAN,
     DEFAULT_NUMBER,
-    DEFAULT_OBJECT,
+    DEFAULT_NESTED_OBJECT,
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
@@ -18,7 +18,7 @@ it("fields is not null or undefined", () => {
 it("fields is read-only", () => {
     const form = useFormValidation({ schema: testSchema });
     const fields = form.fields;
-    
+
     expect(() => {
         //@ts-expect-error
         form.fields = {} as any;
@@ -84,10 +84,10 @@ describe("fields are initialized with default values", () => {
             numberField: expect.objectContaining({ value: DEFAULT_NUMBER }),
             booleanField: expect.objectContaining({ value: DEFAULT_BOOLEAN }),
             nestedObjectField: expect.objectContaining({
-                value: DEFAULT_OBJECT,
+                value: DEFAULT_NESTED_OBJECT,
             }),
             lazyObjectField: expect.objectContaining({
-                value: DEFAULT_OBJECT,
+                value: DEFAULT_NESTED_OBJECT,
             }),
             lazyStringField: expect.objectContaining({ value: DEFAULT_STRING }),
             lazyNumberField: expect.objectContaining({ value: DEFAULT_NUMBER }),

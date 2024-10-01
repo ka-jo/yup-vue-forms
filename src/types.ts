@@ -42,9 +42,11 @@ export interface IFieldValidation<T> {
     readonly errors: Iterable<string>;
     readonly isValid: boolean;
 
-    validate(): boolean;
     getValue(): T | null;
     setValue(value: T | null | undefined): void;
+
+    validate(): boolean;
+    reset(value?: T | null | undefined): void;
 }
 
 export interface FieldValidation<T> extends IFieldValidation<T> {
@@ -56,6 +58,8 @@ export interface FormValidation<T extends AnyObject> extends IFieldValidation<Fo
     set value(value: PartialDeep<T>);
     readonly fields: FormFields<T>;
     readonly errors: FormErrors<T>;
+
+    reset(value?: PartialDeep<T> | null | undefined): void;
 }
 
 export type FormValue<T extends AnyObject> = {
