@@ -1,10 +1,10 @@
 import { computed, readonly, Ref, ref } from "vue";
-import { IFieldState, ReadonlyRef, ReferenceOrSchema } from "./types";
+import { IValidationState, ReadonlyRef, ReferenceOrSchema } from "./types";
 import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
 import { isLazySchema, isObjectSchema, isSchema } from "./util";
-import { Form } from "./Form";
+import { ObjectValidation } from "./ObjectValidation";
 
-export class Field implements IFieldState {
+export class FieldValidation implements IValidationState {
     #schema: Schema<any>;
     #value: Ref<unknown>;
     #errors: Ref<ReadonlyArray<string>>;
@@ -67,14 +67,14 @@ export class Field implements IFieldState {
         schema: ReferenceOrSchema,
         initialValue: any,
         options: ValidateOptions
-    ): IFieldState | undefined {
+    ): IValidationState | undefined {
         if (isObjectSchema(schema)) {
-            return Form.createForm(schema, initialValue, options);
+            return ObjectValidation.createForm(schema, initialValue, options);
         } else if (isLazySchema(schema)) {
             schema = schema.resolve({ value: initialValue });
-            return Field.createField(schema, initialValue, options);
+            return FieldValidation.createField(schema, initialValue, options);
         } else if (isSchema(schema)) {
-            return new Field(schema, initialValue, options);
+            return new FieldValidation(schema, initialValue, options);
         } else {
             return undefined;
         }

@@ -1,4 +1,4 @@
-import { useFormValidation } from "@/main";
+import { useValidation } from "@/main";
 import {
     DEFAULT_BOOLEAN,
     DEFAULT_NESTED_OBJECT,
@@ -11,7 +11,7 @@ import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 describe("calling reset with no value", () => {
     it("sets value to schema default", () => {
-        const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
+        const form = useValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
         form.reset();
         expect(form.value).toMatchObject({
             requiredField: DEFAULT_STRING,
@@ -28,7 +28,7 @@ describe("calling reset with no value", () => {
     });
 
     it("does not set value to initial value", () => {
-        const form = useFormValidation({
+        const form = useValidation({
             schema: testSchema,
             value: {
                 requiredField: "initial value",
@@ -45,14 +45,14 @@ describe("calling reset with no value", () => {
 
 describe("calling reset with a value", () => {
     it("sets value to that value", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         expect(form.value).toMatchObject(DEFAULT_TEST_OBJECT);
         form.reset(VALID_TEST_OBJECT);
         expect(form.value).toMatchObject(VALID_TEST_OBJECT);
     });
 
     it("uses schema default for missing fields", () => {
-        const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
+        const form = useValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
         form.reset({ requiredField: "new field value" });
         expect(form.value).toMatchObject({
             requiredField: "new field value",
@@ -70,7 +70,7 @@ describe("calling reset with a value", () => {
 });
 
 it("callling reset sets isValid to false", () => {
-    const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
+    const form = useValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
     form.validate();
     expect(form.isValid).toBe(true);
     form.reset();
@@ -78,7 +78,7 @@ it("callling reset sets isValid to false", () => {
 });
 
 it("calling reset sets errors to empty array", () => {
-    const form = useFormValidation({
+    const form = useValidation({
         schema: testSchema,
         value: {
             requiredField: "",

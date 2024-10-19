@@ -1,9 +1,15 @@
 import { computed, customRef, reactive, readonly, Ref, ref, UnwrapNestedRefs } from "vue";
 import { ObjectSchema, AnyObject, ValidateOptions } from "yup";
-import { FormState, IFieldState, FormErrorState, FormErrors, ReadonlyRef } from "./types";
-import { Field } from "./Field";
+import {
+    ObjectValidationState,
+    IValidationState,
+    FormErrorState,
+    ObjectErrors,
+    ReadonlyRef,
+} from "./types";
+import { FieldValidation } from "./FieldValidation";
 
-export class Form implements FormState {
+export class ObjectValidation implements ObjectValidationState {
     #schema: ObjectSchema<AnyObject>;
     /**
      * Internal reactive object containing the form state
@@ -11,21 +17,21 @@ export class Form implements FormState {
      */
     #value: object;
     #options: ValidateOptions;
-    #fields: Record<string, IFieldState>;
+    #fields: Record<string, IValidationState>;
     #trackValue!: Function;
     #triggerValue!: Function;
 
     readonly value: Ref<AnyObject>;
     readonly errors: ReadonlyRef<UnwrapNestedRefs<FormErrorState>>;
     readonly isValid: ReadonlyRef<boolean>;
-    readonly fields: ReadonlyRef<Record<string, IFieldState>>;
+    readonly fields: ReadonlyRef<Record<string, IValidationState>>;
 
     constructor(
         options: ValidateOptions<AnyObject>,
         schema: ObjectSchema<any>,
         value: Record<string, Ref<unknown>>,
         errors: Record<string, ReadonlyRef<Iterable<string>>>,
-        fields: Record<string, IFieldState>
+        fields: Record<string, IValidationState>
     ) {
         // binding methods to instance so "this" isn't bound to Vue's reactive proxy
         this.validate = this.validate.bind(this);
@@ -38,10 +44,10 @@ export class Form implements FormState {
         this.#options = options;
         this.#fields = fields;
 
-        this.value = Form.initializeValue(this);
-        this.errors = Form.initializeErrors(errors);
-        this.isValid = Form.initializeIsValid(this);
-        this.fields = Form.initializeFields(fields);
+        this.value = ObjectValidation.initializeValue(this);
+        this.errors = ObjectValidation.initializeErrors(errors);
+        this.isValid = ObjectValidation.initializeIsValid(this);
+        this.fields = ObjectValidation.initializeFields(fields);
     }
 
     validate(): boolean {
@@ -85,14 +91,14 @@ export class Form implements FormState {
         schema: ObjectSchema<any>,
         initialValue: AnyObject | undefined,
         options: ValidateOptions
-    ): FormState {
+    ): ObjectValidationState {
         const defaultValue = Object.assign({}, schema.spec.default, initialValue);
-        const fields: Record<string, IFieldState> = {};
+        const fields: Record<string, IValidationState> = {};
         const value: Record<string, Ref<unknown>> = {};
         const errors: Record<string, ReadonlyRef<Iterable<string>>> = {};
 
         for (const fieldName in schema.fields) {
-            const nestedField = Field.createField(
+            const nestedField = FieldValidation.createField(
                 schema.fields[fieldName],
                 defaultValue[fieldName],
                 options
@@ -105,7 +111,7 @@ export class Form implements FormState {
             }
         }
 
-        return new Form(options, schema, value, errors, fields);
+        return new ObjectValidation(options, schema, value, errors, fields);
     }
 
     private static *errorIterator(this: Record<string, Ref<Iterable<string>>>): Iterator<string> {
@@ -116,7 +122,7 @@ export class Form implements FormState {
         }
     }
 
-    private static initializeValue(form: Form): Ref<AnyObject> {
+    private static initializeValue(form: ObjectValidation): Ref<AnyObject> {
         return customRef((track, trigger) => {
             form.#trackValue = track;
             form.#triggerValue = trigger;
@@ -131,23 +137,23 @@ export class Form implements FormState {
         errors: Record<string, Ref<Iterable<string>>>
     ): ReadonlyRef<UnwrapNestedRefs<FormErrorState>> {
         //@ts-expect-error: it doesn't like adding the iterable protocol because the type doesn't include it, but it's not worth it to get the type "correct"
-        errors[Symbol.iterator] = Form.errorIterator.bind(errors);
+        errors[Symbol.iterator] = ObjectValidation.errorIterator.bind(errors);
         //@ts-expect-error: this method is a mess, but I'm tired of wrestling with typing
         return readonly(ref(errors));
     }
 
-    private static initializeIsValid(form: Form): Readonly<Ref<boolean>> {
-        return computed(() => Form.isValid(form));
+    private static initializeIsValid(form: ObjectValidation): Readonly<Ref<boolean>> {
+        return computed(() => ObjectValidation.isValid(form));
     }
 
     private static initializeFields(
-        fields: Record<string, IFieldState>
-    ): ReadonlyRef<Record<string, IFieldState>> {
+        fields: Record<string, IValidationState>
+    ): ReadonlyRef<Record<string, IValidationState>> {
         const reactiveFields = reactive(fields);
         return computed(() => reactiveFields);
     }
 
-    private static isValid(form: Form) {
+    private static isValid(form: ObjectValidation) {
         for (const fieldName of Object.keys(form.#fields)) {
             if (form.#fields[fieldName].isValid.value === false) {
                 return false;

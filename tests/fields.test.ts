@@ -1,4 +1,4 @@
-import { useFormValidation } from "@/main";
+import { useValidation } from "@/main";
 
 import {
     DEFAULT_BOOLEAN,
@@ -7,16 +7,16 @@ import {
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
-import { FormFields } from "@/types";
+import { ObjectFields } from "@/types";
 
 it("fields is not null or undefined", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     expect(form.fields).not.toBeNull();
     expect(form.fields).not.toBeUndefined();
 });
 
 it("fields is read-only", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     const fields = form.fields;
 
     expect(() => {
@@ -28,7 +28,7 @@ it("fields is read-only", () => {
 });
 
 it("field fields is readonly", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     const nestedObject = form.fields.nestedObjectField;
     const fields = nestedObject.fields;
     expect(() => {
@@ -40,8 +40,8 @@ it("field fields is readonly", () => {
 });
 
 it("fields includes all schema fields", () => {
-    const form = useFormValidation({ schema: testSchema });
-    expect(form.fields).toMatchObject<FormFields<TestSchema>>({
+    const form = useValidation({ schema: testSchema });
+    expect(form.fields).toMatchObject<ObjectFields<TestSchema>>({
         requiredField: expect.anything(),
         optionalField: expect.anything(),
         stringField: expect.anything(),
@@ -56,8 +56,8 @@ it("fields includes all schema fields", () => {
 });
 
 it("object fields have nested fields", () => {
-    const form = useFormValidation({ schema: testSchema });
-    expect(form.fields.nestedObjectField.fields).toMatchObject<FormFields<NestedObject>>({
+    const form = useValidation({ schema: testSchema });
+    expect(form.fields.nestedObjectField.fields).toMatchObject<ObjectFields<NestedObject>>({
         nestedRequiredField: expect.anything(),
         nestedOptionalField: expect.anything(),
         nestedStringField: expect.anything(),
@@ -65,7 +65,7 @@ it("object fields have nested fields", () => {
         nestedBooleanField: expect.anything(),
     });
 
-    expect(form.fields.lazyObjectField.fields).toMatchObject<FormFields<NestedObject>>({
+    expect(form.fields.lazyObjectField.fields).toMatchObject<ObjectFields<NestedObject>>({
         nestedRequiredField: expect.anything(),
         nestedOptionalField: expect.anything(),
         nestedStringField: expect.anything(),
@@ -76,8 +76,8 @@ it("object fields have nested fields", () => {
 
 describe("fields are initialized with default values", () => {
     it("with schema defaults", () => {
-        const form = useFormValidation({ schema: testSchema });
-        expect(form.fields).toMatchObject<FormFields<TestSchema>>({
+        const form = useValidation({ schema: testSchema });
+        expect(form.fields).toMatchObject<ObjectFields<TestSchema>>({
             requiredField: expect.objectContaining({ value: DEFAULT_STRING }),
             optionalField: expect.objectContaining({ value: null }),
             stringField: expect.objectContaining({ value: DEFAULT_STRING }),
@@ -97,7 +97,7 @@ describe("fields are initialized with default values", () => {
 
     it("with provided value", () => {
         const testValue = "test";
-        const form = useFormValidation({ schema: testSchema, value: { optionalField: testValue } });
+        const form = useValidation({ schema: testSchema, value: { optionalField: testValue } });
         expect(form.fields).toMatchObject({
             optionalField: expect.objectContaining({ value: testValue }),
         });
@@ -110,7 +110,7 @@ describe("fields are initialized with default values", () => {
             booleanField: false,
         };
 
-        const form = useFormValidation({ schema: testSchema, value: newValues });
+        const form = useValidation({ schema: testSchema, value: newValues });
         expect(form.fields).toMatchObject({
             requiredField: expect.objectContaining({ value: newValues.requiredField }),
             numberField: expect.objectContaining({ value: newValues.numberField }),
@@ -121,28 +121,28 @@ describe("fields are initialized with default values", () => {
 
 describe("field values change with form value", () => {
     it("changing form value changes field value", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         const newValue = "new value";
         form.value.requiredField = newValue;
         expect(form.fields.requiredField.value).toBe(newValue);
     });
 
     it("changing field value changes form value", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         const newValue = "new value";
         form.fields.requiredField.value = newValue;
         expect(form.value.requiredField).toBe(newValue);
     });
 
     it("changing nested field value changes form value", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         const newValue = "new value";
         form.fields.nestedObjectField.fields.nestedRequiredField.value = newValue;
         expect(form.value.nestedObjectField.nestedRequiredField).toBe(newValue);
     });
 
     it("changing nested form value changes nested field value", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         const newValue = "new value";
         form.value.nestedObjectField.nestedRequiredField = newValue;
         expect(form.fields.nestedObjectField.fields.nestedRequiredField.value).toBe(newValue);

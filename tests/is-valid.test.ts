@@ -1,14 +1,14 @@
-import { useFormValidation } from "@/main";
+import { useValidation } from "@/main";
 import { testSchema } from "./fixtures/test-schema";
 import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 it("isValid is initialized to false", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     expect(form.isValid).toBe(false);
 });
 
 it("isValid is true when all fields are valid", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     form.value = VALID_TEST_OBJECT;
     form.validate();
     expect(form.isValid).toBe(true);
@@ -16,7 +16,7 @@ it("isValid is true when all fields are valid", () => {
 
 describe("isValid is false", () => {
     it("when any field is invalid", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         form.value.requiredField = "";
         form.validate();
         expect(form.fields.requiredField.isValid).toBe(false);
@@ -24,7 +24,7 @@ describe("isValid is false", () => {
     });
 
     it("when a nested field is invalid", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         form.value.nestedObjectField.nestedRequiredField = "";
         form.validate();
         expect(form.fields.nestedObjectField.fields.nestedRequiredField.isValid).toBe(false);
@@ -34,7 +34,7 @@ describe("isValid is false", () => {
 });
 
 it("isValid updates with fields", () => {
-    const form = useFormValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
+    const form = useValidation({ schema: testSchema, value: VALID_TEST_OBJECT });
     const requiredField = form.fields.requiredField;
 
     form.validate();
@@ -50,7 +50,7 @@ it("isValid updates with fields", () => {
 });
 
 it("isValid is read-only", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     expect(form.isValid).toBe(false);
 
     expect(() => {
@@ -62,7 +62,7 @@ it("isValid is read-only", () => {
 });
 
 it("field isValid is read-only", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     const requiredField = form.fields.requiredField;
 
     expect(requiredField.isValid).toBe(false);

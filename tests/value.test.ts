@@ -1,4 +1,4 @@
-import { useFormValidation } from "@/main";
+import { useValidation } from "@/main";
 
 import {
     DEFAULT_BOOLEAN,
@@ -10,13 +10,13 @@ import {
 import { VALID_TEST_OBJECT } from "./fixtures/valid-value";
 
 it("value is not null or undefined", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     expect(form.value).not.toBeNull();
     expect(form.value).not.toBeUndefined();
 });
 
 it("value includes all schema fields", () => {
-    const form = useFormValidation({ schema: testSchema });
+    const form = useValidation({ schema: testSchema });
     expect(form.value).toMatchObject({
         requiredField: expect.anything(),
         optionalField: null,
@@ -33,7 +33,7 @@ it("value includes all schema fields", () => {
 
 describe("value is initialized with default values", () => {
     it("with schema defaults", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         expect(form.value).toMatchObject({
             requiredField: DEFAULT_STRING,
             optionalField: null,
@@ -50,7 +50,7 @@ describe("value is initialized with default values", () => {
 
     it("with provided value", () => {
         const testValue = "test";
-        const form = useFormValidation({ schema: testSchema, value: { optionalField: testValue } });
+        const form = useValidation({ schema: testSchema, value: { optionalField: testValue } });
         expect(form.value).toMatchObject({
             optionalField: testValue,
         });
@@ -64,7 +64,7 @@ describe("value is initialized with default values", () => {
             lazyStringField: "new value",
         };
 
-        const form = useFormValidation({ schema: testSchema, value: newValues });
+        const form = useValidation({ schema: testSchema, value: newValues });
 
         expect(form.value).toMatchObject({
             requiredField: newValues.requiredField,
@@ -92,7 +92,7 @@ describe("value is initialized with default values", () => {
             },
         };
 
-        const form = useFormValidation({ schema: testSchema, value: newValues });
+        const form = useValidation({ schema: testSchema, value: newValues });
 
         expect(form.value).toMatchObject({
             nestedObjectField: {
@@ -117,12 +117,12 @@ describe("value is initialized with default values", () => {
 
 describe("value can be set with a partial", () => {
     it("using empty object", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         form.value = {};
     });
 
     it("reinitializes value with defaults", () => {
-        const form = useFormValidation({ schema: testSchema });
+        const form = useValidation({ schema: testSchema });
         form.value = VALID_TEST_OBJECT;
         expect(form.value).toMatchObject(VALID_TEST_OBJECT);
         form.value = {};
