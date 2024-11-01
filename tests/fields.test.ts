@@ -7,7 +7,7 @@ import {
     DEFAULT_STRING,
     testSchema,
 } from "./fixtures/test-schema";
-import { ObjectFields } from "@/types";
+import { ObjectValidationFields } from "@/types";
 
 it("fields is not null or undefined", () => {
     const form = useValidation({ schema: testSchema });
@@ -41,7 +41,7 @@ it("field fields is readonly", () => {
 
 it("fields includes all schema fields", () => {
     const form = useValidation({ schema: testSchema });
-    expect(form.fields).toMatchObject<ObjectFields<TestSchema>>({
+    expect(form.fields).toMatchObject<ObjectValidationFields<TestSchema>>({
         requiredField: expect.anything(),
         optionalField: expect.anything(),
         stringField: expect.anything(),
@@ -57,7 +57,9 @@ it("fields includes all schema fields", () => {
 
 it("object fields have nested fields", () => {
     const form = useValidation({ schema: testSchema });
-    expect(form.fields.nestedObjectField.fields).toMatchObject<ObjectFields<NestedObject>>({
+    expect(form.fields.nestedObjectField.fields).toMatchObject<
+        ObjectValidationFields<NestedObject>
+    >({
         nestedRequiredField: expect.anything(),
         nestedOptionalField: expect.anything(),
         nestedStringField: expect.anything(),
@@ -65,7 +67,7 @@ it("object fields have nested fields", () => {
         nestedBooleanField: expect.anything(),
     });
 
-    expect(form.fields.lazyObjectField.fields).toMatchObject<ObjectFields<NestedObject>>({
+    expect(form.fields.lazyObjectField.fields).toMatchObject<ObjectValidationFields<NestedObject>>({
         nestedRequiredField: expect.anything(),
         nestedOptionalField: expect.anything(),
         nestedStringField: expect.anything(),
@@ -77,7 +79,7 @@ it("object fields have nested fields", () => {
 describe("fields are initialized with default values", () => {
     it("with schema defaults", () => {
         const form = useValidation({ schema: testSchema });
-        expect(form.fields).toMatchObject<ObjectFields<TestSchema>>({
+        expect(form.fields).toMatchObject<ObjectValidationFields<TestSchema>>({
             requiredField: expect.objectContaining({ value: DEFAULT_STRING }),
             optionalField: expect.objectContaining({ value: null }),
             stringField: expect.objectContaining({ value: DEFAULT_STRING }),

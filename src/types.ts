@@ -30,15 +30,15 @@ export interface FieldValidationState extends IValidationState {
 }
 
 export interface ObjectValidationState extends IValidationState {
-    readonly errors: ReadonlyRef<UnwrapNestedRefs<FormErrorState>>;
+    readonly errors: ReadonlyRef<ObjectValidationStateErrors>;
     readonly fields: ReadonlyRef<Record<string, IValidationState>>;
 }
 
-export type FormErrorState = Iterable<string> & {
-    readonly [key: string]: Ref<Iterable<string>>;
+export type ObjectValidationStateErrors = Iterable<string> & {
+    readonly [key: string]: Iterable<string>;
 };
 
-export interface IValidation<T> {
+export interface IValidation<T = unknown> {
     value: T | null;
     readonly errors: Iterable<string>;
     readonly isValid: boolean;
@@ -54,30 +54,31 @@ export interface FieldValidation<T> extends IValidation<T> {
     readonly errors: ReadonlyArray<string>;
 }
 
-export interface ObjectValidation<T extends AnyObject> extends IValidation<ObjectValue<T>> {
-    get value(): ObjectValue<T>;
+export interface ObjectValidation<T extends AnyObject>
+    extends IValidation<ObjectValidationValue<T>> {
+    get value(): ObjectValidationValue<T>;
     set value(value: PartialDeep<T>);
-    readonly fields: ObjectFields<T>;
-    readonly errors: ObjectErrors<T>;
+    readonly fields: ObjectValidationFields<T>;
+    readonly errors: ObjectValidationErrors<T>;
 
     reset(value?: PartialDeep<T> | null | undefined): void;
 }
 
-export type ObjectValue<T extends AnyObject> = {
+export type ObjectValidationValue<T extends AnyObject> = {
     [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
-        ? ObjectValue<NonNullable<T[key]>>
+        ? ObjectValidationValue<NonNullable<T[key]>>
         : T[key] | null;
 };
 
-export type ObjectFields<T extends AnyObject> = {
+export type ObjectValidationFields<T extends AnyObject> = {
     [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
         ? ObjectValidation<NonNullable<T[key]>>
         : IValidation<T[key]>;
 };
 
-export type ObjectErrors<T extends AnyObject> = Iterable<string> & {
+export type ObjectValidationErrors<T extends AnyObject = AnyObject> = Iterable<string> & {
     [key in keyof T]-?: NonNullable<T[key]> extends AnyObject
-        ? ObjectErrors<NonNullable<T[key]>>
+        ? ObjectValidationErrors<NonNullable<T[key]>>
         : Array<string>;
 };
 

@@ -1,15 +1,9 @@
 import { computed, customRef, reactive, readonly, Ref, ref, UnwrapNestedRefs } from "vue";
 import { ObjectSchema, AnyObject, ValidateOptions } from "yup";
-import {
-    ObjectValidationState,
-    IValidationState,
-    FormErrorState,
-    ObjectErrors,
-    ReadonlyRef,
-} from "./types";
-import { FieldValidation } from "./FieldValidation";
+import { IValidation, ObjectValidationErrors, ReadonlyRef } from "./types";
+import { createValidationHandler, IValidationHandler } from "./IValidationHandler";
 
-export class ObjectValidation implements ObjectValidationState {
+export class ObjectValidationHandler implements IValidationHandler {
     #schema: ObjectSchema<AnyObject>;
     /**
      * Internal reactive object containing the form state
@@ -17,21 +11,21 @@ export class ObjectValidation implements ObjectValidationState {
      */
     #value: object;
     #options: ValidateOptions;
-    #fields: Record<string, IValidationState>;
+    #fields: Record<string, IValidationHandler>;
     #trackValue!: Function;
     #triggerValue!: Function;
 
     readonly value: Ref<AnyObject>;
-    readonly errors: ReadonlyRef<UnwrapNestedRefs<FormErrorState>>;
+    readonly errors: ReadonlyRef<ObjectValidationErrors>;
     readonly isValid: ReadonlyRef<boolean>;
-    readonly fields: ReadonlyRef<Record<string, IValidationState>>;
+    readonly fields: ReadonlyRef<Record<string, IValidation>>;
 
     constructor(
         options: ValidateOptions<AnyObject>,
         schema: ObjectSchema<any>,
         value: Record<string, Ref<unknown>>,
         errors: Record<string, ReadonlyRef<Iterable<string>>>,
-        fields: Record<string, IValidationState>
+        fields: Record<string, IValidationHandler>
     ) {
         // binding methods to instance so "this" isn't bound to Vue's reactive proxy
         this.validate = this.validate.bind(this);
@@ -44,10 +38,10 @@ export class ObjectValidation implements ObjectValidationState {
         this.#options = options;
         this.#fields = fields;
 
-        this.value = ObjectValidation.initializeValue(this);
-        this.errors = ObjectValidation.initializeErrors(errors);
-        this.isValid = ObjectValidation.initializeIsValid(this);
-        this.fields = ObjectValidation.initializeFields(fields);
+        this.value = ObjectValidationHandler.initializeValue(this);
+        this.errors = ObjectValidationHandler.initializeErrors(errors);
+        this.isValid = ObjectValidationHandler.initializeIsValid(this);
+        this.fields = ObjectValidationHandler.initializeFields(fields);
     }
 
     validate(): boolean {
@@ -87,18 +81,18 @@ export class ObjectValidation implements ObjectValidationState {
         this.#triggerValue();
     }
 
-    public static createForm(
+    public static create(
         schema: ObjectSchema<any>,
         initialValue: AnyObject | undefined,
         options: ValidateOptions
-    ): ObjectValidationState {
+    ): ObjectValidationHandler {
         const defaultValue = Object.assign({}, schema.spec.default, initialValue);
-        const fields: Record<string, IValidationState> = {};
+        const fields: Record<string, IValidationHandler> = {};
         const value: Record<string, Ref<unknown>> = {};
         const errors: Record<string, ReadonlyRef<Iterable<string>>> = {};
 
         for (const fieldName in schema.fields) {
-            const nestedField = FieldValidation.createField(
+            const nestedField = createValidationHandler(
                 schema.fields[fieldName],
                 defaultValue[fieldName],
                 options
@@ -111,7 +105,7 @@ export class ObjectValidation implements ObjectValidationState {
             }
         }
 
-        return new ObjectValidation(options, schema, value, errors, fields);
+        return new ObjectValidationHandler(options, schema, value, errors, fields);
     }
 
     private static *errorIterator(this: Record<string, Ref<Iterable<string>>>): Iterator<string> {
@@ -122,40 +116,40 @@ export class ObjectValidation implements ObjectValidationState {
         }
     }
 
-    private static initializeValue(form: ObjectValidation): Ref<AnyObject> {
+    private static initializeValue(handler: ObjectValidationHandler): Ref<AnyObject> {
         return customRef((track, trigger) => {
-            form.#trackValue = track;
-            form.#triggerValue = trigger;
+            handler.#trackValue = track;
+            handler.#triggerValue = trigger;
             return {
-                get: form.getValue,
-                set: form.setValue,
+                get: handler.getValue,
+                set: handler.setValue,
             };
         });
     }
 
     private static initializeErrors(
         errors: Record<string, Ref<Iterable<string>>>
-    ): ReadonlyRef<UnwrapNestedRefs<FormErrorState>> {
+    ): ReadonlyRef<ObjectValidationErrors> {
         //@ts-expect-error: it doesn't like adding the iterable protocol because the type doesn't include it, but it's not worth it to get the type "correct"
-        errors[Symbol.iterator] = ObjectValidation.errorIterator.bind(errors);
+        errors[Symbol.iterator] = ObjectValidationHandler.errorIterator.bind(errors);
         //@ts-expect-error: this method is a mess, but I'm tired of wrestling with typing
         return readonly(ref(errors));
     }
 
-    private static initializeIsValid(form: ObjectValidation): Readonly<Ref<boolean>> {
-        return computed(() => ObjectValidation.isValid(form));
+    private static initializeIsValid(state: ObjectValidationHandler): ReadonlyRef<boolean> {
+        return computed(() => ObjectValidationHandler.isValid(state));
     }
 
     private static initializeFields(
-        fields: Record<string, IValidationState>
-    ): ReadonlyRef<Record<string, IValidationState>> {
-        const reactiveFields = reactive(fields);
-        return computed(() => reactiveFields);
+        fields: Record<string, IValidationHandler>
+    ): ReadonlyRef<Record<string, IValidation>> {
+        //@ts-expect-error: the typing for reactive isn't deeply unwrapping the refs which would turn an IValidationHandler into an IValidation
+        return computed(() => reactive(fields));
     }
 
-    private static isValid(form: ObjectValidation) {
-        for (const fieldName of Object.keys(form.#fields)) {
-            if (form.#fields[fieldName].isValid.value === false) {
+    private static isValid(state: ObjectValidationHandler) {
+        for (const fieldName of Object.keys(state.#fields)) {
+            if (state.#fields[fieldName].isValid.value === false) {
                 return false;
             }
         }

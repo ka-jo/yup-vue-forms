@@ -1,10 +1,11 @@
 import { computed, readonly, Ref, ref } from "vue";
-import { IValidationState, ReadonlyRef, ReferenceOrSchema } from "./types";
+import { ReadonlyRef, ReferenceOrSchema } from "./types";
 import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
 import { isLazySchema, isObjectSchema, isSchema } from "./util";
-import { ObjectValidation } from "./ObjectValidation";
+import { ObjectValidationHandler } from "./ObjectValidationHandler";
+import { IValidationHandler } from "./IValidationHandler";
 
-export class FieldValidation implements IValidationState {
+export class FieldValidationHandler implements IValidationHandler {
     #schema: Schema<any>;
     #value: Ref<unknown>;
     #errors: Ref<ReadonlyArray<string>>;
@@ -63,20 +64,11 @@ export class FieldValidation implements IValidationState {
         this.#value.value = value ?? this.#schema.spec.default ?? null;
     }
 
-    public static createField(
-        schema: ReferenceOrSchema,
+    public static create(
+        schema: Schema,
         initialValue: any,
         options: ValidateOptions
-    ): IValidationState | undefined {
-        if (isObjectSchema(schema)) {
-            return ObjectValidation.createForm(schema, initialValue, options);
-        } else if (isLazySchema(schema)) {
-            schema = schema.resolve({ value: initialValue });
-            return FieldValidation.createField(schema, initialValue, options);
-        } else if (isSchema(schema)) {
-            return new FieldValidation(schema, initialValue, options);
-        } else {
-            return undefined;
-        }
+    ): FieldValidationHandler {
+        return new FieldValidationHandler(schema, initialValue, options);
     }
 }
