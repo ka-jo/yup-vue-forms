@@ -1,7 +1,7 @@
 import { Ref } from "vue";
 import { ValidateOptions } from "yup";
 import { ReadonlyRef, ReferenceOrSchema } from "./types";
-import { FieldValidationHandler } from "./FieldValidationHandler";
+import { PrimitiveValidationHandler } from "./PrimitiveValidationHandler";
 import { ObjectValidationHandler } from "./ObjectValidationHandler";
 import { isObjectSchema, isLazySchema, isSchema } from "./util";
 
@@ -27,7 +27,7 @@ export function createValidationHandler(
         schema = schema.resolve({ value: initialValue });
         return createValidationHandler(schema, initialValue, options);
     } else if (isSchema(schema)) {
-        return FieldValidationHandler.create(schema, initialValue, options);
+        return PrimitiveValidationHandler.create(schema, initialValue, options);
     } else {
         return undefined;
     }

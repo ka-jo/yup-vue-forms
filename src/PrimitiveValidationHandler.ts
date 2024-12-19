@@ -1,11 +1,9 @@
 import { computed, readonly, Ref, ref } from "vue";
-import { ReadonlyRef, ReferenceOrSchema } from "./types";
+import { ReadonlyRef } from "./types";
 import { AnyObject, Schema, ValidateOptions, ValidationError } from "yup";
-import { isLazySchema, isObjectSchema, isSchema } from "./util";
-import { ObjectValidationHandler } from "./ObjectValidationHandler";
 import { IValidationHandler } from "./IValidationHandler";
 
-export class FieldValidationHandler implements IValidationHandler {
+export class PrimitiveValidationHandler implements IValidationHandler {
     #schema: Schema<any>;
     #value: Ref<unknown>;
     #errors: Ref<ReadonlyArray<string>>;
@@ -68,7 +66,7 @@ export class FieldValidationHandler implements IValidationHandler {
         schema: Schema,
         initialValue: any,
         options: ValidateOptions
-    ): FieldValidationHandler {
-        return new FieldValidationHandler(schema, initialValue, options);
+    ): PrimitiveValidationHandler {
+        return new PrimitiveValidationHandler(schema, initialValue, options);
     }
 }

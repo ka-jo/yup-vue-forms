@@ -1,4 +1,4 @@
-import { computed, customRef, reactive, readonly, Ref, ref, UnwrapNestedRefs } from "vue";
+import { computed, customRef, reactive, readonly, Ref, ref } from "vue";
 import { ObjectSchema, AnyObject, ValidateOptions } from "yup";
 import { IValidation, ObjectValidationErrors, ReadonlyRef } from "./types";
 import { createValidationHandler, IValidationHandler } from "./IValidationHandler";
@@ -47,10 +47,8 @@ export class ObjectValidationHandler implements IValidationHandler {
     validate(): boolean {
         for (const field of Object.values(this.#fields)) {
             const isFieldValid = field.validate();
-            if (isFieldValid === false) {
-                if (this.#options.abortEarly) {
-                    break;
-                }
+            if (isFieldValid === false && this.#options.abortEarly) {
+                break;
             }
         }
 
